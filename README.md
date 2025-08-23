@@ -125,3 +125,35 @@ Para mais detalhes, consulte o tutorial completo: [Como Gerar uma API Key na Ope
 Para mais informações, consulte a documentação oficial: [Como usar chaves da API Gemini](https://ai.google.dev/gemini-api/docs/api-key?hl=pt-BR)
 
 **Nota:** Certifique-se de não compartilhar suas chaves de API publicamente e de armazená-las em locais seguros, pois elas concedem acesso aos serviços correspondentes.
+
+## Configuração do VS Code
+
+Para evitar erros de importação no VS Code (como "Could not resolve the import 'dotenv'" ou "Could not resolve the import 'langchain_openai'"), siga estes passos:
+
+### Resolvendo Problemas de Importação
+
+1. **Abra o Command Palette no VS Code:**
+   - Mac: `Cmd + Shift + P`
+   - Windows/Linux: `Ctrl + Shift + P`
+
+2. **Selecione o interpretador Python correto:**
+   - Digite "Python: Select Interpreter"
+   - Escolha o interpretador do ambiente virtual:
+     - Deve aparecer algo como `./venv/bin/python` ou `venv/bin/python`
+     - Ou escolha "Enter interpreter path..." e cole o caminho completo:
+       ```
+       /Users/cesar340/Library/Mobile Documents/com~apple~CloudDocs/Documents/Projects/langchain/venv/bin/python
+       ```
+
+3. **Verifique se funcionou:**
+   - Os erros de importação devem desaparecer
+   - Na barra inferior do VS Code deve aparecer algo como "Python 3.9.x ('venv')"
+
+### Alternativa: Recarregar o VS Code
+
+Se os erros persistirem:
+1. Pressione `Cmd + Shift + P` (Mac) ou `Ctrl + Shift + P` (Windows/Linux)
+2. Digite "Developer: Reload Window"
+3. Repita os passos de seleção do interpretador
+
+**Dica:** O VS Code detecta automaticamente ambientes virtuais na pasta `venv/`, então na maioria dos casos basta selecionar o interpretador correto uma vez.
