@@ -658,6 +658,289 @@ reduce_prompt = PromptTemplate.from_template(
 
 ---
 
+# 🤖 PASTA 3: AGENTES E TOOLS
+
+---
+
+## 🤖 Script 1: 3-agentes-e-tools/1-agente-react-e-tools.py
+
+### Explicação do Agente ReAct:
+```python
+from langchain.agents import create_react_agent, AgentExecutor
+```
+
+**O que é um Agente ReAct:**
+- **ReAct**: Reasoning and Acting (Raciocínio e Ação)
+- **Raciocina** sobre qual ferramenta usar
+- **Executa ações** para obter informações
+- **Combina** pensamento e ação
+
+### Explicação do decorador @tool:
+```python
+@tool("calculator", return_direct=True)
+def calculator(expression: str) -> str:
+    """Evaluate a simple mathematical expression and return the result as a string."""
+    return str(result)
+```
+
+**O que é o decorador @tool:**
+- **Transforma funções Python** em ferramentas do agente
+- **`return_direct=True`**: Retorna resultado diretamente
+- **`return_direct=False`**: Permite processamento adicional pelo agente
+
+### Explicação do formato ReAct:
+```python
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [tools]
+Action Input: the input to the action
+Observation: the result of the action
+```
+
+**Fluxo de raciocínio:**
+1. **Question**: Pergunta original
+2. **Thought**: Agente pensa sobre o que fazer
+3. **Action**: Escolhe qual ferramenta usar
+4. **Action Input**: Parâmetros para a ferramenta
+5. **Observation**: Resultado da ferramenta
+6. **Repete** até ter a resposta final
+
+### Explicação do AgentExecutor:
+```python
+agent_executor = AgentExecutor.from_agent_and_tools(
+    agent=agent_chain, 
+    tools=tools, 
+    verbose=True, 
+    handle_parsing_errors="Invalid format...",
+    max_iterations=3
+)
+```
+
+**Parâmetros importantes:**
+- **`verbose=True`**: Mostra o processo de raciocínio
+- **`max_iterations=3`**: Limita tentativas (evita loops infinitos)
+- **`handle_parsing_errors`**: Mensagem para erros de formato
+
+### Vantagens dos Agentes ReAct:
+- **Raciocínio explícito**: Pode ver como o agente pensa
+- **Flexibilidade**: Pode usar múltiplas ferramentas
+- **Extensibilidade**: Fácil adicionar novas ferramentas
+- **Controle**: Define limites e regras
+
+### Exemplo de uso:
+```python
+# Criar ferramenta
+@tool("search")
+def search(query: str) -> str:
+    return "Resultado da busca"
+
+# Criar agente
+tools = [search]
+agent = create_react_agent(llm, tools, prompt)
+executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools)
+
+# Usar agente
+result = executor.invoke({"input": "Pergunta do usuário"})
+```
+
+### Diferença entre Tools e Funções normais:
+- **Função normal**: Executa diretamente
+- **Tool**: Integrada ao agente, pode ser escolhida dinamicamente
+- **Tool**: Tem descrição que o agente usa para decidir
+
+---
+
+## 🔗 Script 2: 3-agentes-e-tools/2-agente-react-usando-prompt-hub.py
+
+### Explicação do Prompt Hub:
+```python
+from langchain import hub
+prompt = hub.pull("hwchase17/react")
+```
+
+**O que é o Prompt Hub:**
+- **Repositório de prompts** da comunidade LangChain
+- **Prompts testados** e otimizados
+- **Reutilização** de templates comprovados
+- **Padrões** estabelecidos pela comunidade
+
+### Diferença entre prompt personalizado e Prompt Hub:
+
+**Prompt personalizado (Script 1):**
+```python
+prompt = PromptTemplate.from_template("""
+Answer the following questions as best you can...
+{tools}
+Use the following format:
+Question: {input}
+Thought: {agent_scratchpad}
+""")
+```
+- ✅ Controle total sobre o prompt
+- ❌ Precisa escrever do zero
+- ❌ Pode ter bugs ou ineficiências
+
+**Prompt Hub (Script 2):**
+```python
+prompt = hub.pull("hwchase17/react")
+```
+- ✅ Prompt testado e otimizado
+- ✅ Criado por especialistas
+- ✅ Padrão da comunidade
+- ❌ Menos flexibilidade
+
+### Explicação do "hwchase17/react":
+```python
+hub.pull("hwchase17/react")
+```
+
+**O que é:**
+- **"hwchase17"**: Harrison Chase (criador do LangChain)
+- **"react"**: Prompt para agentes ReAct
+- **Prompt oficial** do LangChain para ReAct
+- **Testado extensivamente** pela comunidade
+
+### Vantagens do Prompt Hub:
+- **Qualidade**: Prompts testados e otimizados
+- **Padronização**: Usa formatos estabelecidos
+- **Rapidez**: Não precisa criar prompts do zero
+- **Confiabilidade**: Menos bugs e problemas
+- **Comunidade**: Beneficia-se de melhorias coletivas
+
+### Exemplo de outros prompts do hub:
+```python
+# Diferentes tipos de prompts disponíveis
+prompt1 = hub.pull("hwchase17/react")           # Agente ReAct
+prompt2 = hub.pull("hwchase17/react-chat")      # ReAct para chat
+prompt3 = hub.pull("hwchase17/zero-shot-react") # ReAct zero-shot
+```
+
+### Quando usar cada abordagem:
+
+**Use Prompt Hub quando:**
+- ✅ Quer um prompt testado e confiável
+- ✅ Está começando com agentes
+- ✅ Precisa de padrões estabelecidos
+- ✅ Quer rapidez na implementação
+
+**Use prompt personalizado quando:**
+- ✅ Precisa de controle total
+- ✅ Tem requisitos específicos
+- ✅ Quer otimizar para seu caso de uso
+- ✅ Precisa de funcionalidades customizadas
+
+### Fluxo de uso do Prompt Hub:
+```python
+# 1. Importar hub
+from langchain import hub
+
+# 2. Baixar prompt
+prompt = hub.pull("hwchase17/react")
+
+# 3. Usar no agente
+agent = create_react_agent(llm, tools, prompt)
+```
+
+---
+
+## 🔧 Script 7: 2-chains-e-processamento/7-pipeline-de-sumarizacao.py
+
+### Explicação do pipeline manual map-reduce:
+```python
+# Fase MAP
+map_prompt = PromptTemplate.from_template("Write a concise summary of the following text:\n{context}")
+map_chain = map_prompt | llm | StrOutputParser()
+prepare_map_inputs = RunnableLambda(lambda docs: [{"context": d.page_content} for d in docs])
+map_stage = prepare_map_inputs | map_chain.map()
+
+# Fase REDUCE
+reduce_prompt = PromptTemplate.from_template("Combine the following summaries into a single concise summary:\n{context}")
+reduce_chain = reduce_prompt | llm | StrOutputParser()
+prepare_reduce_input = RunnableLambda(lambda summaries: {"context": "\n".join(summaries)})
+
+# Pipeline completo
+pipeline = map_stage | prepare_reduce_input | reduce_chain
+```
+
+### Diferença entre pipeline manual e load_summarize_chain:
+
+**load_summarize_chain (Script 6):**
+```python
+chain = load_summarize_chain(llm, chain_type="map_reduce")
+```
+- ✅ Mais simples de implementar
+- ❌ Menos controle sobre cada etapa
+- ❌ Prompts fixos (não personalizáveis)
+
+**Pipeline manual (Script 7):**
+```python
+# Controle total sobre cada etapa
+map_prompt = PromptTemplate.from_template("Seu prompt personalizado")
+reduce_prompt = PromptTemplate.from_template("Seu prompt personalizado")
+```
+- ✅ Controle total sobre prompts
+- ✅ Personalização completa
+- ✅ Flexibilidade máxima
+- ❌ Mais código para implementar
+
+### Explicação do PromptTemplate.from_template():
+```python
+map_prompt = PromptTemplate.from_template("Write a concise summary of the following text:\n{context}")
+```
+
+**Vantagem:**
+- **Criação rápida** de templates simples
+- **Não precisa definir** input_variables explicitamente
+- **Detecta automaticamente** as variáveis no template
+
+### Explicação do método .map():
+```python
+map_stage = prepare_map_inputs | map_chain.map()
+```
+
+**O que faz:**
+- **Aplica a chain** a cada item da lista de inputs
+- **Processamento paralelo** de múltiplos documentos
+- **Retorna lista** de resultados
+
+### Fluxo detalhado do pipeline:
+
+**Fase MAP:**
+```python
+# 1. prepare_map_inputs: Converte documentos em lista de dicionários
+# 2. map_chain.map(): Aplica sumarização a cada chunk
+# 3. Resultado: Lista de resumos individuais
+```
+
+**Fase REDUCE:**
+```python
+# 1. prepare_reduce_input: Junta todos os resumos em uma string
+# 2. reduce_chain: Combina os resumos em um resumo final
+# 3. Resultado: Resumo final consolidado
+```
+
+### Vantagens do pipeline manual:
+- **Controle total**: Personaliza cada etapa
+- **Prompts customizados**: Adapta para seu caso de uso
+- **Flexibilidade**: Pode adicionar etapas intermediárias
+- **Debugging**: Fácil de identificar problemas
+- **Otimização**: Pode ajustar cada componente
+
+### Exemplo de personalização:
+```python
+# Prompt personalizado para sumarização
+map_prompt = PromptTemplate.from_template(
+    "Summarize this text in exactly 3 bullet points:\n{context}"
+)
+
+# Prompt personalizado para combinação
+reduce_prompt = PromptTemplate.from_template(
+    "Create a poetic summary of these summaries:\n{context}"
+)
+```
+
+---
+
 ## 📝 Notas Gerais
 
 ### Diferença entre os métodos:
