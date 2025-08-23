@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Completo LangChain - Estudo Interativo</title>
+    
+    <!-- Prism.js para Syntax Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+    
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #06b6d4;
+            
+            --bg-dark: #0f172a;
+            --bg-medium: #1e293b;
+            --bg-light: #334155;
+            --bg-card: #1e293b;
+            
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --border: #334155;
+            --border-light: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-medium) 100%);
+            color: var(--text-primary);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-menu a:hover {
+            color: var(--primary);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            margin-bottom: 4rem;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto 2rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Progress Overview */
+        .progress-overview {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            border: 1px solid var(--border);
+        }
+
+        .progress-overview h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .progress-item {
+            background: var(--bg-light);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .progress-item.completed {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .progress-item i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .progress-item.completed i {
+            color: var(--success);
+        }
+
+        /* Content Sections */
+        .content-section {
+            margin-bottom: 4rem;
+        }
+
+        .section-header {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 1rem 1rem 0 0;
+            border: 1px solid var(--border);
+            border-bottom: none;
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+        }
+
+        .section-content {
+            background: var(--bg-medium);
+            padding: 2rem;
+            border-radius: 0 0 1rem 1rem;
+            border: 1px solid var(--border);
+        }
+
+        /* Script Cards */
+        .scripts-grid {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .script-card {
+            background: var(--bg-card);
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .script-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-color: var(--primary);
+        }
+
+        .script-header {
+            background: linear-gradient(135deg, var(--bg-light), var(--bg-medium));
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .script-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .script-number {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .script-description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .script-body {
+            padding: 1.5rem;
+        }
+
+        .concept-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .concept-pill {
+            background: var(--bg-light);
+            color: var(--text-primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            border: 1px solid var(--border);
+        }
+
+        .concept-pill.primary {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Code Examples */
+        .code-example {
+            background: #0d1117;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+
+        .code-example pre {
+            margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .code-example code {
+            color: #e6edf3;
+        }
+
+        /* Key Concepts */
+        .key-concepts {
+            background: var(--bg-card);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--primary);
+        }
+
+        .key-concepts h4 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .key-concepts ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .key-concepts li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-secondary);
+        }
+
+        .key-concepts li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+
+        /* Python Concepts Box */
+        .python-box {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1));
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .python-box h4 {
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .python-box .python-icon {
+            background: var(--secondary);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+        }
+
+        /* Tips and Notes */
+        .tip {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .tip-header {
+            color: var(--success);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .warning-header {
+            color: var(--warning);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Learning Path */
+        .learning-path {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 3rem 0;
+            border: 1px solid var(--border);
+        }
+
+        .learning-path h2 {
+            color: var(--primary);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .path-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .path-steps::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--border);
+            z-index: 0;
+        }
+
+        .path-step {
+            background: var(--bg-medium);
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+
+        .path-step.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .path-step i {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .path-step span {
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* Quick Reference */
+        .quick-ref {
+            background: var(--bg-card);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border: 1px solid var(--border);
+        }
+
+        .quick-ref h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .ref-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .ref-item {
+            background: var(--bg-light);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .ref-item code {
+            background: var(--bg-dark);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--info);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-dark);
+            border-top: 1px solid var(--border);
+            padding: 3rem 0;
+            margin-top: 5rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .path-steps {
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            .path-steps::before {
+                width: 2px;
+                height: 100%;
+                top: 0;
+                left: 50%;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-light);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-robot"></i> LangChain Mastery
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="#fundamentos">Fundamentos</a></li>
+                    <li><a href="#chains">Chains</a></li>
+                    <li><a href="#agentes">Agentes</a></li>
+                    <li><a href="#memoria">Memória</a></li>
+                    <li><a href="#vectordb">Vector DB</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1 class="fade-in">Domine LangChain com Python</h1>
+            <p class="fade-in">Um guia completo e interativo para aprender LangChain do zero, com explicações detalhadas de Python e exemplos práticos</p>
+            <div class="hero-buttons fade-in">
+                <a href="#comecar" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Começar Agora
+                </a>
+                <a href="#roadmap" class="btn btn-secondary">
+                    <i class="fas fa-map"></i> Ver Roadmap
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <!-- Progress Overview -->
+        <div class="progress-overview">
+            <h2><i class="fas fa-chart-line"></i> Seu Progresso</h2>
+            <div class="progress-grid">
+                <div class="progress-item">
+                    <i class="fas fa-book"></i>
+                    <div>Fundamentos</div>
+                    <small>4 scripts</small>
+                </div>
+                <div class="progress-item">
+                    <i class="fas fa-link"></i>
+                    <div>Chains</div>
+                    <small>7 scripts</small>
+                </div>
+                <div class="progress-item">
+                    <i class="fas fa-robot"></i>
+                    <div>Agentes</div>
+                    <small>2 scripts</small>
+                </div>
+                <div class="progress-item">
+                    <i class="fas fa-brain"></i>
+                    <div>Memória</div>
+                    <small>2 scripts</small>
+                </div>
+                <div class="progress-item">
+                    <i class="fas fa-database"></i>
+                    <div>Vector DB</div>
+                    <small>4 scripts</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Learning Path -->
+        <div class="learning-path" id="roadmap">
+            <h2><i class="fas fa-route"></i> Caminho de Aprendizado</h2>
+            <div class="path-steps">
+                <div class="path-step active">
+                    <i class="fas fa-flag-checkered"></i>
+                    <span>Início</span>
+                </div>
+                <div class="path-step">
+                    <i class="fas fa-book"></i>
+                    <span>Básico</span>
+                </div>
+                <div class="path-step">
+                    <i class="fas fa-cogs"></i>
+                    <span>Chains</span>
+                </div>
+                <div class="path-step">
+                    <i class="fas fa-robot"></i>
+                    <span>Agentes</span>
+                </div>
+                <div class="path-step">
+                    <i class="fas fa-database"></i>
+                    <span>RAG</span>
+                </div>
+                <div class="path-step">
+                    <i class="fas fa-trophy"></i>
+                    <span>Expert</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Fundamentos -->
+        <section class="content-section" id="fundamentos">
+            <div class="section-header">
+                <h2><i class="fas fa-book"></i> Pasta 1: Fundamentos</h2>
+                <p>Aprenda os conceitos básicos de LangChain e como trabalhar com modelos de linguagem</p>
+            </div>
+            <div class="section-content">
+                <div class="scripts-grid">
+                    <!-- Script 1 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>
+                                <span class="script-number">1</span>
+                                Hello World com ChatOpenAI
+                            </h3>
+                            <p class="script-description">Como usar modelos OpenAI (GPT) com parâmetros de temperatura e modelo</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="concept-pills">
+                                <span class="concept-pill primary">ChatOpenAI</span>
+                                <span class="concept-pill">temperature</span>
+                                <span class="concept-pill">invoke()</span>
+                                <span class="concept-pill">load_dotenv()</span>
+                            </div>
+                            
+                            <div class="python-box">
+                                <h4>
+                                    <span class="python-icon">PY</span>
+                                    Conceitos Python Necessários
+                                </h4>
+                                <ul>
+                                    <li><strong>Imports:</strong> Como importar módulos e classes</li>
+                                    <li><strong>Instanciação:</strong> Criar objetos com <code>Class(params)</code></li>
+                                    <li><strong>Métodos:</strong> Chamar funções de objetos com <code>.method()</code></li>
+                                    <li><strong>Variáveis de ambiente:</strong> Usar <code>os.getenv()</code> para API keys</li>
+                                </ul>
+                            </div>
+
+                            <div class="code-example">
+                                <pre><code class="language-python">from langchain_openai import ChatOpenAI
+from dotenv import load_dotenv
+
+# Carrega variáveis do arquivo .env
+load_dotenv()
+
+# Cria modelo com parâmetros
+model = ChatOpenAI(
+    model="gpt-3.5-turbo",
+    temperature=0.5  # 0 = determinístico, 1 = criativo
+)
+
+# Faz chamada ao modelo
+response = model.invoke("Olá, mundo!")
+print(response.content)</code></pre>
+                            </div>
+
+                            <div class="key-concepts">
+                                <h4><i class="fas fa-lightbulb"></i> Conceitos-Chave</h4>
+                                <ul>
+                                    <li><strong>temperature:</strong> Controla aleatoriedade (0.0 a 1.0)</li>
+                                    <li><strong>model:</strong> Especifica versão do GPT</li>
+                                    <li><strong>invoke():</strong> Método principal para chamar o modelo</li>
+                                    <li><strong>.content:</strong> Acessa o texto da resposta</li>
+                                </ul>
+                            </div>
+
+                            <div class="tip">
+                                <div class="tip-header">
+                                    <i class="fas fa-info-circle"></i> Dica
+                                </div>
+                                <p>Sempre configure suas API keys no arquivo <code>.env</code> para manter segurança. Nunca commite keys no código!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Script 2 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>
+                                <span class="script-number">2</span>
+                                Modelos Genéricos com init_chat_model
+                            </h3>
+                            <p class="script-description">Como usar modelos de diferentes provedores (Google, OpenAI, Anthropic)</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="concept-pills">
+                                <span class="concept-pill primary">init_chat_model</span>
+                                <span class="concept-pill">model_provider</span>
+                                <span class="concept-pill">Google Gemini</span>
+                                <span class="concept-pill">Flexibilidade</span>
+                            </div>
+                            
+                            <div class="python-box">
+                                <h4>
+                                    <span class="python-icon">PY</span>
+                                    Conceitos Python Necessários
+                                </h4>
+                                <ul>
+                                    <li><strong>Parâmetros nomeados:</strong> <code>func(param="value")</code></li>
+                                    <li><strong>Strings:</strong> Diferentes provedores como strings</li>
+                                    <li><strong>Abstração:</strong> Mesma interface para diferentes implementações</li>
+                                </ul>
+                            </div>
+
+                            <div class="code-example">
+                                <pre><code class="language-python">from langchain_core.messages import init_chat_model
+
+# Flexível para trocar entre provedores
+gemini = init_chat_model(
+    model="gemini-2.0-flash",
+    model_provider="google_genai"
+)
+
+# Mesma interface para qualquer provedor
+response = gemini.invoke("Explique IA em uma frase")
+print(response.content)</code></pre>
+                            </div>
+
+                            <div class="key-concepts">
+                                <h4><i class="fas fa-lightbulb"></i> Conceitos-Chave</h4>
+                                <ul>
+                                    <li><strong>Portabilidade:</strong> Troque modelos sem mudar código</li>
+                                    <li><strong>Provedores:</strong> google_genai, openai, anthropic</li>
+                                    <li><strong>Abstração:</strong> Interface unificada para todos</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Script 3 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>
+                                <span class="script-number">3</span>
+                                Templates de Prompt Simples
+                            </h3>
+                            <p class="script-description">Como criar prompts reutilizáveis com variáveis dinâmicas</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="concept-pills">
+                                <span class="concept-pill primary">PromptTemplate</span>
+                                <span class="concept-pill">input_variables</span>
+                                <span class="concept-pill">format()</span>
+                                <span class="concept-pill">Reutilização</span>
+                            </div>
+                            
+                            <div class="python-box">
+                                <h4>
+                                    <span class="python-icon">PY</span>
+                                    Conceitos Python Necessários
+                                </h4>
+                                <ul>
+                                    <li><strong>f-strings:</strong> <code>{variable}</code> em strings</li>
+                                    <li><strong>Listas:</strong> <code>["item1", "item2"]</code></li>
+                                    <li><strong>Métodos format:</strong> Substituição de variáveis</li>
+                                    <li><strong>Templates:</strong> Padrões reutilizáveis</li>
+                                </ul>
+                            </div>
+
+                            <div class="code-example">
+                                <pre><code class="language-python">from langchain.prompts import PromptTemplate
+
+# Cria template reutilizável
+template = PromptTemplate(
+    input_variables=["nome", "idade"],
+    template="Olá {nome}, você tem {idade} anos. Conte uma piada sobre sua idade!"
+)
+
+# Usa com diferentes valores
+prompt1 = template.format(nome="João", idade=25)
+prompt2 = template.format(nome="Maria", idade=30)</code></pre>
+                            </div>
+
+                            <div class="key-concepts">
+                                <h4><i class="fas fa-lightbulb"></i> Conceitos-Chave</h4>
+                                <ul>
+                                    <li><strong>Variáveis:</strong> Use {var} para placeholders</li>
+                                    <li><strong>Reutilização:</strong> Um template, múltiplos usos</li>
+                                    <li><strong>Manutenção:</strong> Mude template uma vez, afeta todos</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Script 4 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>
+                                <span class="script-number">4</span>
+                                Templates de Chat Estruturados
+                            </h3>
+                            <p class="script-description">Como criar conversas com roles (system, user, assistant)</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="concept-pills">
+                                <span class="concept-pill primary">ChatPromptTemplate</span>
+                                <span class="concept-pill">system</span>
+                                <span class="concept-pill">human</span>
+                                <span class="concept-pill">from_messages</span>
+                            </div>
+                            
+                            <div class="python-box">
+                                <h4>
+                                    <span class="python-icon">PY</span>
+                                    Conceitos Python Necessários
+                                </h4>
+                                <ul>
+                                    <li><strong>Tuplas:</strong> <code>("role", "content")</code></li>
+                                    <li><strong>Listas de tuplas:</strong> Estruturas de mensagens</li>
+                                    <li><strong>Roles:</strong> system, human, assistant</li>
+                                </ul>
+                            </div>
+
+                            <div class="code-example">
+                                <pre><code class="language-python">from langchain.prompts import ChatPromptTemplate
+
+# Cria conversa estruturada
+chat_template = ChatPromptTemplate.from_messages([
+    ("system", "Você é um assistente útil especializado em {area}"),
+    ("human", "{pergunta}")
+])
+
+# Formata com valores
+messages = chat_template.format_messages(
+    area="Python",
+    pergunta="Como uso decorators?"
+)</code></pre>
+                            </div>
+
+                            <div class="key-concepts">
+                                <h4><i class="fas fa-lightbulb"></i> Conceitos-Chave</h4>
+                                <ul>
+                                    <li><strong>System:</strong> Define comportamento do assistente</li>
+                                    <li><strong>Human:</strong> Entrada do usuário</li>
+                                    <li><strong>Assistant:</strong> Resposta do modelo</li>
+                                    <li><strong>Estrutura:</strong> Conversas mais controladas</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Chains -->
+        <section class="content-section" id="chains">
+            <div class="section-header">
+                <h2><i class="fas fa-link"></i> Pasta 2: Chains e Processamento</h2>
+                <p>Aprenda a criar pipelines de processamento complexos com LCEL</p>
+            </div>
+            <div class="section-content">
+                <div class="scripts-grid">
+                    <!-- Script 1 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>
+                                <span class="script-number">1</span>
+                                LCEL e Pipe Operator
+                            </h3>
+                            <p class="script-description">Como conectar componentes em sequência usando o operador |</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="concept-pills">
+                                <span class="concept-pill primary">LCEL</span>
+                                <span class="concept-pill">Pipe |</span>
+                                <span class="concept-pill">Chains</span>
+                                <span class="concept-pill">Sequencial</span>
+                            </div>
+                            
+                            <div class="python-box">
+                                <h4>
+                                    <span class="python-icon">PY</span>
+                                    Conceitos Python Necessários
+                                </h4>
+                                <ul>
+                                    <li><strong>Operador |:</strong> Pipe operator para encadeamento</li>
+                                    <li><strong>Composição:</strong> Output de A vira input de B</li>
+                                    <li><strong>Fluxo de dados:</strong> Esquerda para direita</li>
+                                </ul>
+                            </div>
+
+                            <div class="code-example">
+                                <pre><code class="language-python">from langchain.prompts import PromptTemplate
+from langchain_openai import ChatOpenAI
+
+# Componentes individuais
+prompt = PromptTemplate.from_template("Traduza para inglês: {texto}")
+model = ChatOpenAI()
+
+# Conecta com pipe operator
+chain = prompt | model
+
+# Executa pipeline completo
+result = chain.invoke({"texto": "Olá mundo"})</code></pre>
+                            </div>
+
+                            <div class="key-concepts">
+                                <h4><i class="fas fa-lightbulb"></i> Conceitos-Chave</h4>
+                                <ul>
+                                    <li><strong>LCEL:</strong> LangChain Expression Language</li>
+                                    <li><strong>Pipe |:</strong> Conecta componentes sequencialmente</li>
+                                    <li><strong>Chain:</strong> Pipeline de processamento</li>
+                                    <li><strong>invoke():</strong> Executa toda a chain</li>
+                                </ul>
+                            </div>
+
+                            <div class="tip">
+                                <div class="tip-header">
+                                    <i class="fas fa-info-circle"></i> Dica
+                                </div>
+                                <p>O operador | funciona como Unix pipes: <code>prompt | model | parser</code> = dados fluem da esquerda para direita</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Script 2 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>
+                                <span class="script-number">2</span>
+                                Decorator @chain
+                            </h3>
+                            <p class="script-description">Como criar funções customizadas que funcionam em chains</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="concept-pills">
+                                <span class="concept-pill primary">@chain</span>
+                                <span class="concept-pill">Decorator</span>
+                                <span class="concept-pill">Dict I/O</span>
+                                <span class="concept-pill">Custom</span>
+                            </div>
+                            
+                            <div class="python-box">
+                                <h4>
+                                    <span class="python-icon">PY</span>
+                                    Conceitos Python Necessários
+                                </h4>
+                                <ul>
+                                    <li><strong>Decorators:</strong> <code>@decorator</code> modifica funções</li>
+                                    <li><strong>Dicionários:</strong> Input e output como dict</li>
+                                    <li><strong>Type hints:</strong> <code>def func(x: dict) -> dict</code></li>
+                                </ul>
+                            </div>
+
+                            <div class="code-example">
+                                <pre><code class="language-python">from langchain_core.runnables import chain
+
+@chain
+def processar_texto(inputs: dict) -> dict:
+    texto = inputs["texto"]
+    # Processamento customizado
+    texto_processado = texto.upper()
+    return {"resultado": texto_processado}
+
+# Usa em chains
+chain_completa = prompt | model | processar_texto</code></pre>
+                            </div>
+
+                            <div class="key-concepts">
+                                <h4><i class="fas fa-lightbulb"></i> Conceitos-Chave</h4>
+                                <ul>
+                                    <li><strong>@chain:</strong> Transforma função em componente LCEL</li>
+                                    <li><strong>Dict I/O:</strong> Sempre recebe e retorna dicionário</li>
+                                    <li><strong>Integração:</strong> Funciona com pipe operator</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Script 3 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>
+                                <span class="script-number">3</span>
+                                RunnableLambda
+                            </h3>
+                            <p class="script-description">Como integrar funções simples em chains</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="concept-pills">
+                                <span class="concept-pill primary">RunnableLambda</span>
+                                <span class="concept-pill">Lambda</span>
+                                <span class="concept-pill">Simple I/O</span>
+                            </div>
+                            
+                            <div class="python-box">
+                                <h4>
+                                    <span class="python-icon">PY</span>
+                                    Conceitos Python Necessários
+                                </h4>
+                                <ul>
+                                    <li><strong>Lambda:</strong> <code>lambda x: x * 2</code></li>
+                                    <li><strong>Funções simples:</strong> Input direto, output direto</li>
+                                    <li><strong>Wrapping:</strong> Envolver funções existentes</li>
+                                </ul>
+                            </div>
+
+                            <div class="code-example">
+                                <pre><code class="language-python">from langchain_core.runnables import RunnableLambda
+
+# Função simples (não dict)
+def contar_palavras(texto: str) -> int:
+    return len(texto.split())
+
+# Transforma em componente LCEL
+contador = RunnableLambda(contar_palavras)
+
+# Usa em chain
+chain = prompt | model | RunnableLambda(lambda x: x.content.upper())</code></pre>
+                            </div>
+
+                            <div class="key-concepts">
+                                <h4><i class="fas fa-lightbulb"></i> Conceitos-Chave</h4>
+                                <ul>
+                                    <li><strong>Simplicidade:</strong> Para funções com I/O direto</li>
+                                    <li><strong>Lambda:</strong> Funções inline rápidas</li>
+                                    <li><strong>Flexibilidade:</strong> Qualquer função Python</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Reference for Chains -->
+                <div class="quick-ref">
+                    <h3><i class="fas fa-bookmark"></i> Referência Rápida - Chains</h3>
+                    <div class="ref-grid">
+                        <div class="ref-item">
+                            <strong>LCEL Básico:</strong><br>
+                            <code>chain = prompt | model | parser</code>
+                        </div>
+                        <div class="ref-item">
+                            <strong>@chain decorator:</strong><br>
+                            <code>@chain<br>def func(dict) -> dict</code>
+                        </div>
+                        <div class="ref-item">
+                            <strong>RunnableLambda:</strong><br>
+                            <code>RunnableLambda(lambda x: x)</code>
+                        </div>
+                        <div class="ref-item">
+                            <strong>Invoke chain:</strong><br>
+                            <code>chain.invoke({"key": "value"})</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Agentes -->
+        <section class="content-section" id="agentes">
+            <div class="section-header">
+                <h2><i class="fas fa-robot"></i> Pasta 3: Agentes e Tools</h2>
+                <p>Crie agentes inteligentes que podem usar ferramentas e tomar decisões</p>
+            </div>
+            <div class="section-content">
+                <div class="scripts-grid">
+                    <!-- Script 1 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>
+                                <span class="script-number">1</span>
+                                Agente ReAct com Tools
+                            </h3>
+                            <p class="script-description">Como criar agentes que pensam (Reason) e agem (Act) usando ferramentas</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="concept-pills">
+                                <span class="concept-pill primary">ReAct</span>
+                                <span class="concept-pill">@tool</span>
+                                <span class="concept-pill">AgentExecutor</span>
+                                <span class="concept-pill">Reasoning</span>
+                            </div>
+                            
+                            <div class="python-box">
+                                <h4>
+                                    <span class="python-icon">PY</span>
+                                    Conceitos Python Necessários
+                                </h4>
+                                <ul>
+                                    <li><strong>Decorators:</strong> <code>@tool</code> para criar ferramentas</li>
+                                    <li><strong>Docstrings:</strong> Descrição para o agente entender</li>
+                                    <li><strong>Listas:</strong> Lista de ferramentas disponíveis</li>
+                                </ul>
+                            </div>
+
+                            <div class="code-example">
+                                <pre><code class="language-python">from langchain.agents import create_react_agent, AgentExecutor
+from langchain.tools import tool
+
+@tool
+def calculadora(expressao: str) -> str:
+    """Calcula expressões matemáticas"""
+    return str(eval(expressao))
+
+@tool
+def buscar_web(query: str) -> str:
+    """Busca informações na web"""
+    return f"Resultados para: {query}"
+
+# Cria agente
+agent = create_react_agent(llm, [calculadora, buscar_web], prompt)
+executor = AgentExecutor(agent=agent, tools=[calculadora, buscar_web])
+
+# Agente decide qual ferramenta usar
+result = executor.invoke({"input": "Quanto é 25 * 4?"})</code></pre>
+                            </div>
+
+                            <div class="key-concepts">
+                                <h4><i class="fas fa-lightbulb"></i> Conceitos-Chave</h4>
+                                <ul>
+                                    <li><strong>ReAct:</strong> Reasoning + Acting</li>
+                                    <li><strong>Tools:</strong> Funções que o agente pode chamar</li>
+                                    <li><strong>Autonomia:</strong> Agente decide quando e qual tool usar</li>
+                                    <li><strong>Iterativo:</strong> Pode usar múltiplas tools em sequência</li>
+                                </ul>
+                            </div>
+
+                            <div class="warning">
+                                <div class="warning-header">
+                                    <i class="fas fa-exclamation-triangle"></i> Atenção
+                                </div>
+                                <p>Nunca use <code>eval()</code> em produção! Este é apenas um exemplo. Use bibliotecas seguras como <code>numexpr</code>.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Script 2 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>
+                                <span class="script-number">2</span>
+                                Prompt Hub
+                            </h3>
+                            <p class="script-description">Como usar prompts otimizados da comunidade LangChain</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="concept-pills">
+                                <span class="concept-pill primary">hub.pull()</span>
+                                <span class="concept-pill">Community</span>
+                                <span class="concept-pill">Optimized</span>
+                            </div>
+                            
+                            <div class="code-example">
+                                <pre><code class="language-python">from langchain import hub
+
+# Baixa prompt otimizado da comunidade
+prompt = hub.pull("hwchase17/react")
+
+# Usa com seu agente
+agent = create_react_agent(llm, tools, prompt)</code></pre>
+                            </div>
+
+                            <div class="key-concepts">
+                                <h4><i class="fas fa-lightbulb"></i> Conceitos-Chave</h4>
+                                <ul>
+                                    <li><strong>Hub:</strong> Repositório de prompts da comunidade</li>
+                                    <li><strong>Otimizados:</strong> Testados e melhorados pela comunidade</li>
+                                    <li><strong>Reutilização:</strong> Não reinvente a roda</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Memória -->
+        <section class="content-section" id="memoria">
+            <div class="section-header">
+                <h2><i class="fas fa-brain"></i> Pasta 4: Gerenciamento de Memória</h2>
+                <p>Adicione contexto e memória às suas conversas com IA</p>
+            </div>
+            <div class="section-content">
+                <div class="scripts-grid">
+                    <!-- Script 1 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>
+                                <span class="script-number">1</span>
+                                Armazenamento de Histórico
+                            </h3>
+                            <p class="script-description">Como fazer o modelo lembrar de conversas anteriores</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="concept-pills">
+                                <span class="concept-pill primary">InMemoryChatMessageHistory</span>
+                                <span class="concept-pill">RunnableWithMessageHistory</span>
+                                <span class="concept-pill">Sessions</span>
+                            </div>
+                            
+                            <div class="python-box">
+                                <h4>
+                                    <span class="python-icon">PY</span>
+                                    Conceitos Python Necessários
+                                </h4>
+                                <ul>
+                                    <li><strong>Dicionários:</strong> Armazenar sessões</li>
+                                    <li><strong>Funções:</strong> get_session_history</li>
+                                    <li><strong>Estado:</strong> Manter contexto entre chamadas</li>
+                                </ul>
+                            </div>
+
+                            <div class="code-example">
+                                <pre><code class="language-python">from langchain_core.chat_history import InMemoryChatMessageHistory
+from langchain_core.runnables import RunnableWithMessageHistory
+
+# Armazena histórico por sessão
+session_store = {}
+
+def get_session_history(session_id: str):
+    if session_id not in session_store:
+        session_store[session_id] = InMemoryChatMessageHistory()
+    return session_store[session_id]
+
+# Chain com memória
+chain_with_memory = RunnableWithMessageHistory(
+    chain,
+    get_session_history,
+    input_messages_key="input",
+    history_messages_key="history"
+)
+
+# Mantém contexto
+config = {"configurable": {"session_id": "user123"}}
+response1 = chain_with_memory.invoke({"input": "Meu nome é João"}, config)
+response2 = chain_with_memory.invoke({"input": "Qual meu nome?"}, config)
+# Response2 lembrará que o nome é João!</code></pre>
+                            </div>
+
+                            <div class="key-concepts">
+                                <h4><i class="fas fa-lightbulb"></i> Conceitos-Chave</h4>
+                                <ul>
+                                    <li><strong>Sessões:</strong> Histórico separado por usuário/conversa</li>
+                                    <li><strong>Persistência:</strong> Mensagens mantidas entre chamadas</li>
+                                    <li><strong>Contexto:</strong> Modelo "lembra" informações anteriores</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Script 2 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>
+                                <span class="script-number">2</span>
+                                Sliding Window
+                            </h3>
+                            <p class="script-description">Como controlar tamanho da memória para economizar tokens</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="concept-pills">
+                                <span class="concept-pill primary">trim_messages</span>
+                                <span class="concept-pill">max_tokens</span>
+                                <span class="concept-pill">Cost Control</span>
+                            </div>
+                            
+                            <div class="code-example">
+                                <pre><code class="language-python">from langchain_core.messages import trim_messages
+
+def prepare_inputs(payload: dict) -> dict:
+    raw_history = payload.get("raw_history", [])
+    
+    # Mantém apenas últimas mensagens
+    trimmed = trim_messages(
+        raw_history,
+        token_counter=len,  # Função para contar tokens
+        max_tokens=100,     # Limite de tokens
+        strategy="last",    # Mantém últimas mensagens
+        start_on="human"    # Começa do humano
+    )
+    
+    return {"input": payload["input"], "history": trimmed}</code></pre>
+                            </div>
+
+                            <div class="key-concepts">
+                                <h4><i class="fas fa-lightbulb"></i> Conceitos-Chave</h4>
+                                <ul>
+                                    <li><strong>Window:</strong> Janela deslizante de memória</li>
+                                    <li><strong>Economia:</strong> Reduz custos limitando tokens</li>
+                                    <li><strong>Trade-off:</strong> Esquece informações antigas</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Vector DB -->
+        <section class="content-section" id="vectordb">
+            <div class="section-header">
+                <h2><i class="fas fa-database"></i> Pasta 5: Loaders e Banco de Dados Vetoriais</h2>
+                <p>Construa sistemas RAG com busca semântica em documentos</p>
+            </div>
+            <div class="section-content">
+                <div class="scripts-grid">
+                    <!-- Script 1 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>
+                                <span class="script-number">1</span>
+                                WebBaseLoader
+                            </h3>
+                            <p class="script-description">Como carregar conteúdo de páginas web</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="concept-pills">
+                                <span class="concept-pill primary">WebBaseLoader</span>
+                                <span class="concept-pill">HTTP</span>
+                                <span class="concept-pill">Scraping</span>
+                            </div>
+                            
+                            <div class="code-example">
+                                <pre><code class="language-python">from langchain_community.document_loaders import WebBaseLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+# Carrega página web
+loader = WebBaseLoader("https://example.com")
+docs = loader.load()
+
+# Divide em chunks
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=500,
+    chunk_overlap=100
+)
+chunks = splitter.split_documents(docs)</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Script 2 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>
+                                <span class="script-number">2</span>
+                                PyPDFLoader
+                            </h3>
+                            <p class="script-description">Como extrair texto de arquivos PDF</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="concept-pills">
+                                <span class="concept-pill primary">PyPDFLoader</span>
+                                <span class="concept-pill">PDF</span>
+                                <span class="concept-pill">Pages</span>
+                            </div>
+                            
+                            <div class="code-example">
+                                <pre><code class="language-python">from langchain_community.document_loaders import PyPDFLoader
+
+# Carrega PDF
+loader = PyPDFLoader("documento.pdf")
+pages = loader.load()
+
+# Cada página é um Document
+for page in pages:
+    print(f"Página {page.metadata['page']}: {page.page_content[:100]}...")</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Script 3 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>
+                                <span class="script-number">3</span>
+                                Ingestão em PGVector
+                            </h3>
+                            <p class="script-description">Como armazenar documentos em banco vetorial PostgreSQL</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="concept-pills">
+                                <span class="concept-pill primary">PGVector</span>
+                                <span class="concept-pill">OpenAIEmbeddings</span>
+                                <span class="concept-pill">PostgreSQL</span>
+                            </div>
+                            
+                            <div class="python-box">
+                                <h4>
+                                    <span class="python-icon">PY</span>
+                                    Conceitos Python Necessários
+                                </h4>
+                                <ul>
+                                    <li><strong>Embeddings:</strong> Vetores numéricos de texto</li>
+                                    <li><strong>Similaridade:</strong> Distância entre vetores</li>
+                                    <li><strong>Indexação:</strong> Busca eficiente em vetores</li>
+                                </ul>
+                            </div>
+
+                            <div class="code-example">
+                                <pre><code class="language-python">from langchain_openai import OpenAIEmbeddings
+from langchain_postgres import PGVector
+
+# Cria embeddings
+embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+
+# Conecta ao banco
+store = PGVector(
+    embeddings=embeddings,
+    collection_name="documentos",
+    connection="postgresql://user:pass@localhost/db",
+    use_jsonb=True
+)
+
+# Armazena documentos
+store.add_documents(documents=chunks, ids=ids)</code></pre>
+                            </div>
+
+                            <div class="key-concepts">
+                                <h4><i class="fas fa-lightbulb"></i> Conceitos-Chave</h4>
+                                <ul>
+                                    <li><strong>Embeddings:</strong> Representação vetorial de texto</li>
+                                    <li><strong>1536 dimensões:</strong> Tamanho do vetor OpenAI</li>
+                                    <li><strong>Similaridade:</strong> Busca por significado, não palavras</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Script 4 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>
+                                <span class="script-number">4</span>
+                                Busca Vetorial
+                            </h3>
+                            <p class="script-description">Como encontrar documentos similares usando busca semântica</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="concept-pills">
+                                <span class="concept-pill primary">similarity_search</span>
+                                <span class="concept-pill">Score</span>
+                                <span class="concept-pill">Semantic</span>
+                            </div>
+                            
+                            <div class="code-example">
+                                <pre><code class="language-python"># Busca semântica
+query = "Como configurar autenticação?"
+results = store.similarity_search_with_score(query, k=3)
+
+# Resultados ordenados por similaridade
+for doc, score in results:
+    print(f"Score: {score:.2f}")  # Menor = mais similar
+    print(f"Conteúdo: {doc.page_content}")
+    print(f"Metadados: {doc.metadata}")</code></pre>
+                            </div>
+
+                            <div class="key-concepts">
+                                <h4><i class="fas fa-lightbulb"></i> Conceitos-Chave</h4>
+                                <ul>
+                                    <li><strong>Score:</strong> 0.0 = idêntico, >1.0 = diferente</li>
+                                    <li><strong>k:</strong> Número de resultados</li>
+                                    <li><strong>Semântica:</strong> Busca por significado</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RAG Architecture Diagram -->
+                <div class="quick-ref">
+                    <h3><i class="fas fa-project-diagram"></i> Arquitetura RAG Completa</h3>
+                    <div style="text-align: center; padding: 2rem;">
+                        <div style="display: inline-block; text-align: left;">
+                            <p><strong>1. Ingestão:</strong> PDF/Web → Loader → Chunks → Embeddings → Vector DB</p>
+                            <p><strong>2. Busca:</strong> Query → Embedding → Similarity Search → Top K Docs</p>
+                            <p><strong>3. Geração:</strong> Context + Query → LLM → Response</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Python Essentials Section -->
+        <section class="content-section">
+            <div class="section-header">
+                <h2><i class="fas fa-code"></i> Python Essencial para LangChain</h2>
+                <p>Conceitos Python fundamentais que você precisa dominar</p>
+            </div>
+            <div class="section-content">
+                <div class="scripts-grid">
+                    <!-- Python Concept 1 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>Async/Await e Concorrência</h3>
+                            <p class="script-description">Como executar operações assíncronas em LangChain</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="code-example">
+                                <pre><code class="language-python">import asyncio
+from langchain_openai import ChatOpenAI
+
+# Versão assíncrona
+async def processar_multiplos():
+    model = ChatOpenAI()
+    
+    # Executa em paralelo
+    tasks = [
+        model.ainvoke("Pergunta 1"),
+        model.ainvoke("Pergunta 2"),
+        model.ainvoke("Pergunta 3")
+    ]
+    
+    results = await asyncio.gather(*tasks)
+    return results
+
+# Executa
+asyncio.run(processar_multiplos())</code></pre>
+                            </div>
+                            
+                            <div class="tip">
+                                <div class="tip-header">
+                                    <i class="fas fa-info-circle"></i> Dica
+                                </div>
+                                <p>Use <code>ainvoke()</code> para versões assíncronas. Muito mais rápido para múltiplas chamadas!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Python Concept 2 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>Tratamento de Erros</h3>
+                            <p class="script-description">Como lidar com erros de API e rate limits</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="code-example">
+                                <pre><code class="language-python">from tenacity import retry, stop_after_attempt, wait_exponential
+import openai
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=4, max=10)
+)
+def chamar_com_retry():
+    try:
+        response = model.invoke("Pergunta")
+        return response
+    except openai.RateLimitError:
+        print("Rate limit, tentando novamente...")
+        raise
+    except Exception as e:
+        print(f"Erro: {e}")
+        raise</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Python Concept 3 -->
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>Variáveis de Ambiente</h3>
+                            <p class="script-description">Como gerenciar API keys com segurança</p>
+                        </div>
+                        <div class="script-body">
+                            <div class="code-example">
+                                <pre><code class="language-python"># arquivo .env
+OPENAI_API_KEY=sk-...
+GOOGLE_API_KEY=...
+DATABASE_URL=postgresql://...
+
+# código Python
+from dotenv import load_dotenv
+import os
+
+# Carrega variáveis
+load_dotenv()
+
+# Usa com segurança
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("API key não configurada!")</code></pre>
+                            </div>
+                            
+                            <div class="warning">
+                                <div class="warning-header">
+                                    <i class="fas fa-exclamation-triangle"></i> Importante
+                                </div>
+                                <p>NUNCA commite arquivo .env! Adicione ao .gitignore</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Best Practices -->
+        <section class="content-section">
+            <div class="section-header">
+                <h2><i class="fas fa-star"></i> Melhores Práticas</h2>
+                <p>Dicas essenciais para projetos profissionais com LangChain</p>
+            </div>
+            <div class="section-content">
+                <div class="tip">
+                    <div class="tip-header">
+                        <i class="fas fa-dollar-sign"></i> Controle de Custos
+                    </div>
+                    <ul>
+                        <li>Use <code>temperature=0</code> para respostas consistentes e baratas</li>
+                        <li>Implemente cache para queries repetidas</li>
+                        <li>Use modelos menores quando possível (gpt-3.5 vs gpt-4)</li>
+                        <li>Limite tokens com <code>max_tokens</code></li>
+                        <li>Monitore uso com OpenAI dashboard</li>
+                    </ul>
+                </div>
+
+                <div class="tip">
+                    <div class="tip-header">
+                        <i class="fas fa-shield-alt"></i> Segurança
+                    </div>
+                    <ul>
+                        <li>Valide inputs do usuário antes de passar ao modelo</li>
+                        <li>Nunca use <code>eval()</code> com conteúdo gerado</li>
+                        <li>Implemente rate limiting em produção</li>
+                        <li>Use secrets manager para API keys em produção</li>
+                        <li>Monitore logs para uso anormal</li>
+                    </ul>
+                </div>
+
+                <div class="tip">
+                    <div class="tip-header">
+                        <i class="fas fa-rocket"></i> Performance
+                    </div>
+                    <ul>
+                        <li>Use async/await para múltiplas chamadas</li>
+                        <li>Implemente streaming para respostas longas</li>
+                        <li>Cache embeddings frequentemente usados</li>
+                        <li>Use batch processing quando possível</li>
+                        <li>Otimize chunk size para seu use case</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Next Steps -->
+        <section class="content-section">
+            <div class="section-header">
+                <h2><i class="fas fa-graduation-cap"></i> Próximos Passos</h2>
+                <p>Continue sua jornada de aprendizado</p>
+            </div>
+            <div class="section-content">
+                <div class="scripts-grid">
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>🎯 Projetos Práticos</h3>
+                        </div>
+                        <div class="script-body">
+                            <ul>
+                                <li><strong>Iniciante:</strong> Chatbot com memória simples</li>
+                                <li><strong>Intermediário:</strong> Sistema RAG para documentação</li>
+                                <li><strong>Avançado:</strong> Agente multi-modal com visão</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>📚 Recursos Adicionais</h3>
+                        </div>
+                        <div class="script-body">
+                            <ul>
+                                <li>Documentação oficial LangChain</li>
+                                <li>LangChain Hub para prompts</li>
+                                <li>Comunidade Discord</li>
+                                <li>Cursos e tutoriais online</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="script-card">
+                        <div class="script-header">
+                            <h3>🔧 Ferramentas Úteis</h3>
+                        </div>
+                        <div class="script-body">
+                            <ul>
+                                <li><strong>LangSmith:</strong> Debug e monitoring</li>
+                                <li><strong>Streamlit:</strong> UIs rápidas</li>
+                                <li><strong>Chroma:</strong> Vector DB local</li>
+                                <li><strong>Ollama:</strong> LLMs locais</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#"><i class="fab fa-github"></i> GitHub</a>
+                <a href="#"><i class="fas fa-book"></i> Docs</a>
+                <a href="#"><i class="fab fa-discord"></i> Comunidade</a>
+                <a href="#"><i class="fas fa-envelope"></i> Contato</a>
+            </div>
+            <p style="color: var(--text-muted);">
+                Criado com 💜 para facilitar o aprendizado de LangChain<br>
+                © 2024 LangChain Mastery - Guia de Estudo Interativo
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script>
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add fade-in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.script-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.6s ease-out';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,3091 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Python para LangChain - Versão Completa e Didática</title>
+    
+    <!-- Prism.js para Syntax Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.css" rel="stylesheet" />
+    
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #8b5cf6;
+            --accent-color: #ec4899;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --info-color: #06b6d4;
+            
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --bg-card: #1e293b;
+            --bg-code: #0d1117;
+            
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --border-color: #334155;
+            --border-light: #475569;
+            
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            
+            --sidebar-width: 280px;
+            --header-height: 70px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .header-controls {
+            margin-left: auto;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .theme-toggle, .sidebar-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover, .sidebar-toggle:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--primary-color);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            z-index: 999;
+            transition: transform 0.3s ease;
+            padding: 1.5rem;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav > li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .sidebar-nav a:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            transform: translateX(4px);
+        }
+
+        .sidebar-nav a.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .sidebar-nav .sub-nav {
+            margin-left: 1rem;
+            margin-top: 0.5rem;
+            list-style: none;
+        }
+
+        .sidebar-nav .sub-nav a {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 2rem;
+            min-height: calc(100vh - var(--header-height));
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.sidebar-hidden {
+            margin-left: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border-radius: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Sections */
+        .section {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(5px);
+            position: relative;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-icon {
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .section h2 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .section h3 {
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section h4 {
+            color: var(--accent-color);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem 0;
+        }
+
+        /* Cards */
+        .concept-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .concept-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
+        .concept-card.important {
+            border: 2px solid var(--accent-color);
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.05), rgba(139, 92, 246, 0.05));
+        }
+
+        .concept-card.important::before {
+            content: "IMPORTANTE";
+            position: absolute;
+            top: -10px;
+            right: 1rem;
+            background: var(--accent-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Code Blocks */
+        .code-container {
+            position: relative;
+            margin: 1.5rem 0;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .code-header {
+            background: var(--bg-tertiary);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-language {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .copy-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .copy-button:hover {
+            background: var(--secondary-color);
+            transform: scale(1.05);
+        }
+
+        .code-block {
+            background: var(--bg-code) !important;
+            margin: 0 !important;
+            padding: 1.5rem !important;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace !important;
+            font-size: 0.9rem !important;
+            line-height: 1.6 !important;
+            overflow-x: auto;
+        }
+
+        /* Info Boxes */
+        .info-box {
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+            position: relative;
+        }
+
+        .info-box::before {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 1.2rem;
+        }
+
+        .info-box-content {
+            margin-left: 2rem;
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.1));
+            border-left-color: var(--success-color);
+        }
+
+        .tip-box::before {
+            content: "\f0eb";
+            color: var(--success-color);
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.1));
+            border-left-color: var(--warning-color);
+        }
+
+        .warning-box::before {
+            content: "\f071";
+            color: var(--warning-color);
+        }
+
+        .error-box {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(248, 113, 113, 0.1));
+            border-left-color: var(--error-color);
+        }
+
+        .error-box::before {
+            content: "\f06a";
+            color: var(--error-color);
+        }
+
+        .info-box-info {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(14, 165, 233, 0.1));
+            border-left-color: var(--info-color);
+        }
+
+        .info-box-info::before {
+            content: "\f05a";
+            color: var(--info-color);
+        }
+
+        .java-box {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 135, 135, 0.1));
+            border-left-color: #ff6b6b;
+        }
+
+        .java-box::before {
+            content: "\f4e4";
+            color: #ff6b6b;
+        }
+
+        /* Comparison Grid */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .comparison-card {
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .comparison-card.python {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border-color: var(--primary-color);
+        }
+
+        .comparison-card.java {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 135, 135, 0.1));
+            border-color: #ff6b6b;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+        }
+
+        th, td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        /* Interactive Elements */
+        .interactive-demo {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .demo-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .output-area {
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            min-height: 100px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        /* External Links */
+        .external-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .external-link {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .external-link:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
+        .external-link-icon {
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .external-link-content h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--primary-color);
+        }
+
+        .external-link-content p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin: 2rem 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            width: 0%;
+            transition: width 1s ease;
+            border-radius: 0.5rem;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-top: 0.5rem;
+        }
+
+        /* Checklist */
+        .checklist {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--bg-card);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .checklist-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .checklist-item input[type="checkbox"] {
+            width: 1.2rem;
+            height: 1.2rem;
+            accent-color: var(--primary-color);
+        }
+
+        .checklist-item label {
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* Back to Top */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 1rem;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero-stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .section {
+                padding: 1.5rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .demo-controls {
+                flex-direction: column;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <h1><i class="fab fa-python"></i> Guia Python para LangChain</h1>
+        <div class="header-controls">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <ul class="sidebar-nav">
+            <li><a href="#hero" class="active"><i class="fas fa-home"></i> Início</a></li>
+            <li>
+                <a href="#argumentos"><i class="fas fa-cogs"></i> Argumentos de Funções</a>
+                <ul class="sub-nav">
+                    <li><a href="#args-posicionais">Posicionais vs Nomeados</a></li>
+                    <li><a href="#args-kwargs">*args e **kwargs</a></li>
+                    <li><a href="#args-exemplos">Exemplos Práticos</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#imports"><i class="fas fa-download"></i> Imports e Módulos</a>
+                <ul class="sub-nav">
+                    <li><a href="#tipos-import">Tipos de Import</a></li>
+                    <li><a href="#organizacao">Organização</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#variaveis"><i class="fas fa-database"></i> Variáveis e Tipos</a>
+                <ul class="sub-nav">
+                    <li><a href="#tipagem-dinamica">Tipagem Dinâmica</a></li>
+                    <li><a href="#type-hints">Type Hints</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#dicionarios"><i class="fas fa-book"></i> Dicionários</a>
+                <ul class="sub-nav">
+                    <li><a href="#dict-basico">Operações Básicas</a></li>
+                    <li><a href="#dict-metodos">Métodos Importantes</a></li>
+                    <li><a href="#dict-projeto">Uso no Projeto</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#funcoes"><i class="fas fa-code"></i> Funções</a>
+                <ul class="sub-nav">
+                    <li><a href="#funcoes-basicas">Definição Básica</a></li>
+                    <li><a href="#decoradores">Decoradores</a></li>
+                    <li><a href="#docstrings">Docstrings</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#classes"><i class="fas fa-object-group"></i> Classes e Objetos</a>
+                <ul class="sub-nav">
+                    <li><a href="#classes-basicas">Classes Básicas</a></li>
+                    <li><a href="#metodos-magicos">Métodos Mágicos</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#controle-fluxo"><i class="fas fa-route"></i> Controle de Fluxo</a>
+                <ul class="sub-nav">
+                    <li><a href="#condicionais">if/elif/else</a></li>
+                    <li><a href="#loops">Loops</a></li>
+                    <li><a href="#excecoes">Exceções</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#estruturas-dados"><i class="fas fa-list"></i> Estruturas de Dados</a>
+                <ul class="sub-nav">
+                    <li><a href="#listas">Listas</a></li>
+                    <li><a href="#tuplas">Tuplas</a></li>
+                    <li><a href="#sets">Sets</a></li>
+                    <li><a href="#comprehensions">Comprehensions</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#recursos-avancados"><i class="fas fa-rocket"></i> Recursos Avançados</a>
+                <ul class="sub-nav">
+                    <li><a href="#lambda">Lambda Functions</a></li>
+                    <li><a href="#geradores">Geradores</a></li>
+                    <li><a href="#context-managers">Context Managers</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#exercicios"><i class="fas fa-dumbbell"></i> Exercícios Práticos</a>
+            </li>
+            <li>
+                <a href="#recursos-externos"><i class="fas fa-external-link-alt"></i> Recursos Externos</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+        <div class="container">
+            <!-- Hero Section -->
+            <section id="hero" class="hero fade-in">
+                <h1><i class="fab fa-python"></i> Guia Python para LangChain</h1>
+                <p>Tudo que você precisa saber de Python para entender e dominar os códigos do projeto LangChain. Especialmente preparado para desenvolvedores Java.</p>
+                
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-number">30+</div>
+                        <div class="stat-label">Conceitos Explicados</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">100+</div>
+                        <div class="stat-label">Exemplos Práticos</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">50+</div>
+                        <div class="stat-label">Comparações Java vs Python</div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- Seção: Argumentos de Funções -->
+            <section id="argumentos" class="section fade-in">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h2>Argumentos de Funções - Posicionais vs Nomeados</h2>
+                </div>
+                
+                <div class="concept-card important">
+                    <h3><i class="fas fa-key"></i> CONCEITO FUNDAMENTAL</h3>
+                    <p><strong>Este é o conceito que você perguntou!</strong> Em Python, existem várias formas de passar argumentos para funções, oferecendo muito mais flexibilidade que Java.</p>
+                    
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="code-language">
+                                <i class="fab fa-python"></i> Exemplo do Projeto LangChain
+                            </div>
+                            <button class="copy-button" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <pre class="code-block language-python line-numbers"><code>conversational_chain = RunnableWithMessageHistory(
+    chain,                           # ← Argumento POSICIONAL (sem nome)
+    get_session_history,             # ← Argumento POSICIONAL (sem nome)
+    input_messages_key="input",     # ← Argumento NOMEADO (com nome=valor)
+    history_messages_key="history",  # ← Argumento NOMEADO (com nome=valor)
+)</code></pre>
+                    </div>
+
+                    <div class="comparison-grid">
+                        <div class="comparison-card python">
+                            <h4><i class="fab fa-python"></i> Argumentos Posicionais</h4>
+                            <ul>
+                                <li>Passados <strong>SEM nome</strong></li>
+                                <li>Ordem <strong>IMPORTA</strong></li>
+                                <li>Geralmente obrigatórios</li>
+                                <li>Vão <strong>primeiro</strong> na lista</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="comparison-card python">
+                            <h4><i class="fas fa-tag"></i> Argumentos Nomeados (kwargs)</h4>
+                            <ul>
+                                <li>Passados <strong>COM nome=valor</strong></li>
+                                <li>Ordem <strong>NÃO importa</strong></li>
+                                <li>Geralmente opcionais</li>
+                                <li>Vão <strong>depois</strong> dos posicionais</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="error-box">
+                        <div class="info-box-content">
+                            <h4>⚠️ REGRA DE OURO</h4>
+                            <p>Argumentos posicionais SEMPRE vêm ANTES dos nomeados!</p>
+                            <div class="code-container">
+                                <div class="code-header">
+                                    <div class="code-language">
+                                        <i class="fab fa-python"></i> Exemplo de Erro Comum
+                                    </div>
+                                    <button class="copy-button" onclick="copyCode(this)">
+                                        <i class="fas fa-copy"></i> Copiar
+                                    </button>
+                                </div>
+                                <pre class="code-block language-python"><code># ✅ CORRETO:
+funcao(arg1, arg2, nome="valor", outro="valor2")
+
+# ❌ ERRADO:
+funcao(nome="valor", arg1, arg2)  # SyntaxError!</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="concept-card" id="args-posicionais">
+                    <h3><i class="fas fa-arrow-right"></i> Argumentos Posicionais em Detalhes</h3>
+                    
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="code-language">
+                                <i class="fab fa-python"></i> Criando Funções com Argumentos Posicionais
+                            </div>
+                            <button class="copy-button" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <pre class="code-block language-python line-numbers"><code># Função simples com argumentos posicionais
+def criar_usuario(nome, idade, cidade):
+    """Cria um usuário com informações básicas."""
+    return {
+        "nome": nome,
+        "idade": idade,
+        "cidade": cidade,
+        "ativo": True
+    }
+
+# Chamadas corretas (ordem importa!)
+usuario1 = criar_usuario("João", 25, "São Paulo")
+usuario2 = criar_usuario("Maria", 30, "Rio de Janeiro")
+
+# ❌ Erro: ordem errada
+# usuario_erro = criar_usuario(25, "João", "São Paulo")  # Dados trocados!
+
+print(usuario1)
+# Output: {'nome': 'João', 'idade': 25, 'cidade': 'São Paulo', 'ativo': True}</code></pre>
+                    </div>
+
+                    <div class="tip-box">
+                        <div class="info-box-content">
+                            <h4>💡 Quando usar argumentos posicionais?</h4>
+                            <ul>
+                                <li><strong>Poucos argumentos</strong> (2-3 no máximo)</li>
+                                <li><strong>Ordem óbvia</strong> (nome, idade, email)</li>
+                                <li><strong>Argumentos obrigatórios</strong></li>
+                                <li><strong>APIs simples</strong> e diretas</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="concept-card" id="args-kwargs">
+                    <h3><i class="fas fa-asterisk"></i> *args e **kwargs - O Poder da Flexibilidade</h3>
+                    <p>Aqui está a explicação completa que estava faltando no arquivo original!</p>
+
+                    <h4><i class="fas fa-list"></i> *args - Argumentos Posicionais Variáveis</h4>
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="code-language">
+                                <i class="fab fa-python"></i> Criando Funções que Recebem *args
+                            </div>
+                            <button class="copy-button" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <pre class="code-block language-python line-numbers"><code># *args captura argumentos posicionais extras como tupla
+def somar_numeros(primeiro, *args):
+    """Soma o primeiro número com todos os outros fornecidos."""
+    total = primeiro
+    print(f"Primeiro número: {primeiro}")
+    print(f"Números extras: {args}")  # args é uma tupla!
+    
+    for numero in args:
+        total += numero
+    
+    return total
+
+# Testando com diferentes quantidades de argumentos
+resultado1 = somar_numeros(10)                    # Só o obrigatório
+resultado2 = somar_numeros(10, 5)                 # 1 extra
+resultado3 = somar_numeros(10, 5, 3, 7, 2)       # Vários extras
+
+print(f"Resultado 1: {resultado1}")  # 10
+print(f"Resultado 2: {resultado2}")  # 15
+print(f"Resultado 3: {resultado3}")  # 27
+
+# Exemplo mais avançado: função de log
+def log_message(level, *messages):
+    """Sistema de log que aceita múltiplas mensagens."""
+    timestamp = "2024-01-01 10:00:00"
+    combined_message = " | ".join(messages)
+    print(f"[{timestamp}] {level.upper()}: {combined_message}")
+
+log_message("info", "Sistema iniciado")
+log_message("error", "Falha na conexão", "Tentativa 3", "Timeout: 30s")</code></pre>
+                    </div>
+
+                    <h4><i class="fas fa-tags"></i> **kwargs - Argumentos Nomeados Variáveis</h4>
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="code-language">
+                                <i class="fab fa-python"></i> Criando Funções que Recebem **kwargs
+                            </div>
+                            <button class="copy-button" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <pre class="code-block language-python line-numbers"><code># **kwargs captura argumentos nomeados extras como dicionário
+def configurar_servidor(**kwargs):
+    """Configura um servidor com opções flexíveis."""
+    # Valores padrão
+    config = {
+        "host": "localhost",
+        "porta": 8080,
+        "debug": False,
+        "timeout": 30
+    }
+    
+    # Atualiza com os valores fornecidos
+    config.update(kwargs)
+    
+    print("Configuração do servidor:")
+    for chave, valor in config.items():
+        print(f"  {chave}: {valor}")
+    
+    return config
+
+# Testando com diferentes configurações
+config1 = configurar_servidor()  # Só padrões
+print()
+
+config2 = configurar_servidor(porta=3000, debug=True)  # Algumas mudanças
+print()
+
+config3 = configurar_servidor(
+    host="0.0.0.0",
+    porta=443,
+    ssl=True,           # Novo parâmetro!
+    max_connections=100  # Outro novo!
+)
+
+# Exemplo do projeto LangChain
+def criar_chat_openai(**kwargs):
+    """Cria uma instância do ChatOpenAI com configurações flexíveis."""
+    # Configurações padrão
+    default_config = {
+        "model": "gpt-3.5-turbo",
+        "temperature": 0.7,
+        "max_tokens": 1000
+    }
+    
+    # Mescla com configurações fornecidas
+    final_config = {**default_config, **kwargs}
+    
+    print(f"Criando ChatOpenAI com: {final_config}")
+    # return ChatOpenAI(**final_config)  # Desempacota o dict!
+
+# Uso flexível
+chat1 = criar_chat_openai()  # Configuração padrão
+chat2 = criar_chat_openai(model="gpt-4", temperature=0.2)
+chat3 = criar_chat_openai(model="gpt-4", max_tokens=2000, stream=True)</code></pre>
+                    </div>
+
+                    <h4><i class="fas fa-magic"></i> Combinando TUDO: Função Completa</h4>
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="code-language">
+                                <i class="fab fa-python"></i> Função com Todos os Tipos de Argumentos
+                            </div>
+                            <button class="copy-button" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <pre class="code-block language-python line-numbers"><code>def funcao_completa(obrigatorio, *args, padrao="valor_padrao", **kwargs):
+    """
+    Demonstra todos os tipos de argumentos em uma função.
+    
+    Args:
+        obrigatorio: Argumento obrigatório posicional
+        *args: Argumentos posicionais extras
+        padrao: Argumento com valor padrão
+        **kwargs: Argumentos nomeados extras
+    """
+    print(f"Obrigatório: {obrigatorio}")
+    print(f"Args extras: {args}")
+    print(f"Padrão: {padrao}")
+    print(f"Kwargs: {kwargs}")
+    print("-" * 40)
+
+# Testando todas as combinações
+funcao_completa("A")
+# Obrigatório: A
+# Args extras: ()
+# Padrão: valor_padrao
+# Kwargs: {}
+
+funcao_completa("A", "B", "C")
+# Obrigatório: A
+# Args extras: ('B', 'C')
+# Padrão: valor_padrao
+# Kwargs: {}
+
+funcao_completa("A", "B", "C", padrao="custom")
+# Obrigatório: A
+# Args extras: ('B', 'C')
+# Padrão: custom
+# Kwargs: {}
+
+funcao_completa("A", "B", padrao="custom", extra1="X", extra2="Y")
+# Obrigatório: A
+# Args extras: ('B',)
+# Padrão: custom
+# Kwargs: {'extra1': 'X', 'extra2': 'Y'}
+
+# Exemplo real do projeto: criando uma chain flexível
+def criar_chain(llm, prompt, *tools, memory=None, **chain_config):
+    """Cria uma chain do LangChain com configuração flexível."""
+    print(f"LLM: {llm}")
+    print(f"Prompt: {prompt}")
+    print(f"Tools: {tools}")
+    print(f"Memory: {memory}")
+    print(f"Config extra: {chain_config}")
+    
+    # Aqui você construiria a chain real
+    # return AgentExecutor.from_agent_and_tools(...)
+
+# Uso da função
+criar_chain(
+    "gpt-4",                    # obrigatório
+    "You are a helpful AI",     # obrigatório
+    "calculator",               # *tools
+    "search",                   # *tools
+    memory="buffer",            # nomeado
+    verbose=True,               # **kwargs
+    max_iterations=5            # **kwargs
+)</code></pre>
+                    </div>
+
+                    <div class="java-box">
+                        <div class="info-box-content">
+                            <h4>☕ Comparação com Java</h4>
+                            <div class="comparison-grid">
+                                <div class="comparison-card java">
+                                    <strong>Java - Limitado</strong>
+                                    <div class="code-container">
+                                        <pre class="code-block language-java"><code>// Java - Varargs apenas para último parâmetro
+public void metodo(String obrig, String... args) {
+    // args é um array
+}
+
+// Para flexibilidade, usa overloading
+public void config() { ... }
+public void config(String host) { ... }
+public void config(String host, int port) { ... }
+
+// Ou Builder pattern
+ServerConfig.builder()
+    .host("localhost")
+    .port(8080)
+    .debug(true)
+    .build();</code></pre>
+                                    </div>
+                                </div>
+                                
+                                <div class="comparison-card python">
+                                    <strong>Python - Flexível</strong>
+                                    <div class="code-container">
+                                        <pre class="code-block language-python"><code># Python - Múltiplas formas nativas
+def config(*args, **kwargs):
+    # args é tupla, kwargs é dict
+    pass
+
+# Uma função, infinitas possibilidades
+config()
+config("localhost")
+config("localhost", 8080)
+config(host="localhost", port=8080)
+config("localhost", port=8080, debug=True)</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="concept-card" id="args-exemplos">
+                    <h3><i class="fas fa-play"></i> Exemplos Práticos do Projeto</h3>
+                    
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="code-language">
+                                <i class="fab fa-python"></i> Exemplos Reais do LangChain
+                            </div>
+                            <button class="copy-button" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <pre class="code-block language-python line-numbers"><code># 1. ChatOpenAI - Mistura posicionais e nomeados
+from langchain_openai import ChatOpenAI
+
+# Forma básica (só posicionais)
+llm1 = ChatOpenAI("gpt-3.5-turbo")
+
+# Forma completa (posicionais + nomeados)
+llm2 = ChatOpenAI(
+    "gpt-4",                    # posicional: model
+    temperature=0.7,            # nomeado
+    max_tokens=1000,            # nomeado
+    streaming=True              # nomeado
+)
+
+# 2. RunnableWithMessageHistory - Do seu exemplo!
+from langchain.memory import RunnableWithMessageHistory
+
+conversational_chain = RunnableWithMessageHistory(
+    chain,                           # posicional: runnable
+    get_session_history,             # posicional: get_session_history
+    input_messages_key="input",     # nomeado
+    history_messages_key="history", # nomeado
+    output_messages_key="answer"    # nomeado (opcional)
+)
+
+# 3. Decorador @tool - Usa **kwargs internamente
+from langchain.tools import tool
+
+@tool("calculator", return_direct=True)
+def calculator(expression: str) -> str:
+    """Evaluate a mathematical expression."""
+    try:
+        result = eval(expression)
+        return str(result)
+    except Exception as e:
+        return f"Error: {e}"
+
+# O decorador @tool aceita argumentos nomeados:
+@tool(
+    name="search",              # nomeado
+    description="Search tool",  # nomeado
+    return_direct=False         # nomeado
+)
+def search_tool(query: str) -> str:
+    return f"Searching for: {query}"
+
+# 4. Criando chains com configuração flexível
+def create_agent(*tools, llm=None, memory=None, **agent_kwargs):
+    """Cria um agente com tools e configurações flexíveis."""
+    if llm is None:
+        llm = ChatOpenAI()
+    
+    print(f"Tools: {tools}")
+    print(f"LLM: {llm}")
+    print(f"Memory: {memory}")
+    print(f"Extra config: {agent_kwargs}")
+    
+    # Construção real do agente aqui
+    # return AgentExecutor.from_agent_and_tools(
+    #     agent=agent,
+    #     tools=list(tools),
+    #     memory=memory,
+    #     **agent_kwargs
+    # )
+
+# Uso flexível
+agent1 = create_agent(calculator, search_tool)
+agent2 = create_agent(
+    calculator, 
+    search_tool, 
+    llm=ChatOpenAI("gpt-4"),
+    memory=ConversationBufferMemory(),
+    verbose=True,
+    max_iterations=10
+)</code></pre>
+                    </div>
+
+                    <div class="interactive-demo">
+                        <h4><i class="fas fa-gamepad"></i> Teste Interativo: Tipos de Argumentos</h4>
+                        <p>Veja como diferentes formas de passar argumentos funcionam:</p>
+                        <div class="demo-controls">
+                            <button class="btn" onclick="showArgExample('posicionais')">
+                                <i class="fas fa-arrow-right"></i> Só Posicionais
+                            </button>
+                            <button class="btn" onclick="showArgExample('nomeados')">
+                                <i class="fas fa-tag"></i> Com Nomeados
+                            </button>
+                            <button class="btn" onclick="showArgExample('misturado')">
+                                <i class="fas fa-mix"></i> Misturado
+                            </button>
+                            <button class="btn" onclick="showArgExample('kwargs')">
+                                <i class="fas fa-asterisk"></i> Com **kwargs
+                            </button>
+                        </div>
+                        <div id="args-output" class="output-area">Clique em um botão para ver exemplos!</div>
+                    </div>
+                </div>
+
+                <!-- Links Externos para Argumentos -->
+                <div class="external-links">
+                    <a href="https://docs.python.org/3/tutorial/controlflow.html#more-on-defining-functions" target="_blank" class="external-link">
+                        <div class="external-link-icon">
+                            <i class="fab fa-python"></i>
+                        </div>
+                        <div class="external-link-content">
+                            <h4>Documentação Oficial Python</h4>
+                            <p>Guia completo sobre definição de funções e argumentos</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://realpython.com/python-kwargs-and-args/" target="_blank" class="external-link">
+                        <div class="external-link-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="external-link-content">
+                            <h4>Real Python - *args e **kwargs</h4>
+                            <p>Tutorial detalhado com exemplos práticos</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://python.langchain.com/docs/modules/model_io/llms/" target="_blank" class="external-link">
+                        <div class="external-link-icon">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <div class="external-link-content">
+                            <h4>LangChain - Model I/O</h4>
+                            <p>Como usar argumentos na configuração de modelos</p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+
+            <!-- Seção: Imports e Módulos -->
+            <section id="imports" class="section fade-in">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <h2>Imports e Módulos</h2>
+                </div>
+                
+                <div class="concept-card">
+                    <h3><i class="fas fa-info-circle"></i> O que são Imports?</h3>
+                    <p>Imports permitem usar código de outros arquivos ou bibliotecas. É como "pegar emprestado" funcionalidades prontas, evitando reescrever código.</p>
+                    
+                    <div class="info-box-info">
+                        <div class="info-box-content">
+                            <h4>Por que usar imports?</h4>
+                            <ul>
+                                <li><strong>Reutilização:</strong> Não reinvente a roda</li>
+                                <li><strong>Organização:</strong> Separe código em módulos</li>
+                                <li><strong>Manutenção:</strong> Mudanças em um lugar</li>
+                                <li><strong>Colaboração:</strong> Use bibliotecas da comunidade</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="code-language">
+                                <i class="fab fa-python"></i> Exemplos do Projeto LangChain
+                            </div>
+                            <button class="copy-button" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <pre class="code-block language-python line-numbers"><code># Imports típicos do projeto LangChain
+from langchain_openai import ChatOpenAI          # Classe específica
+from langchain.tools import tool                 # Decorador
+from dotenv import load_dotenv                   # Função específica
+import os                                        # Módulo inteiro
+import json                                      # Módulo inteiro</code></pre>
+                    </div>
+                </div>
+
+                <div class="concept-card" id="tipos-import">
+                    <h3><i class="fas fa-list"></i> Tipos de Import</h3>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Sintaxe</th>
+                                    <th>Descrição</th>
+                                    <th>Quando Usar</th>
+                                    <th>Exemplo de Uso</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>import modulo</code></td>
+                                    <td>Importa o módulo inteiro</td>
+                                    <td>Várias funções do módulo</td>
+                                    <td><code>os.getcwd()</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>from modulo import funcao</code></td>
+                                    <td>Importa função específica</td>
+                                    <td>Poucas funções específicas</td>
+                                    <td><code>load_dotenv()</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>from modulo import *</code></td>
+                                    <td>Importa tudo (evitar!)</td>
+                                    <td>Raramente - pode causar conflitos</td>
+                                    <td>Não recomendado</td>
+                                </tr>
+                                <tr>
+                                    <td><code>import modulo as alias</code></td>
+                                    <td>Importa com apelido</td>
+                                    <td>Nomes longos ou conflitos</td>
+                                    <td><code>pd.DataFrame()</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="code-language">
+                                <i class="fab fa-python"></i> Exemplos Detalhados de Cada Tipo
+                            </div>
+                            <button class="copy-button" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <pre class="code-block language-python line-numbers"><code># 1. Import básico - módulo inteiro
+import os
+import json
+import sys
+
+# Uso: sempre com prefixo do módulo
+current_dir = os.getcwd()
+python_version = sys.version
+data = json.loads('{"key": "value"}')
+
+# 2. From import - função específica
+from pathlib import Path
+from datetime import datetime
+from dotenv import load_dotenv
+
+# Uso: direto, sem prefixo
+load_dotenv()
+now = datetime.now()
+path = Path("arquivo.txt")
+
+# 3. Import com alias (apelido)
+import numpy as np
+import pandas as pd
+from langchain_core.runnables import RunnableLambda as RL
+
+# Uso: com o alias
+array = np.array([1, 2, 3])
+df = pd.DataFrame({"col": [1, 2, 3]})
+runnable = RL(lambda x: x.upper())
+
+# 4. Multiple imports da mesma biblioteca
+from langchain_openai import (
+    ChatOpenAI,
+    OpenAIEmbeddings,
+    OpenAI
+)
+
+# 5. Import condicional (avançado)
+try:
+    from langchain_community.tools import DuckDuckGoSearchRun
+    SEARCH_AVAILABLE = True
+except ImportError:
+    SEARCH_AVAILABLE = False
+    print("DuckDuckGo search não disponível")
+
+# 6. Import local (seus próprios módulos)
+from .utils import helper_function      # Mesmo pacote
+from ..config import settings          # Pacote pai
+from my_module import my_function       # Módulo local</code></pre>
+                    </div>
+
+                    <div class="java-box">
+                        <div class="info-box-content">
+                            <h4>☕ Comparação com Java</h4>
+                            <div class="comparison-grid">
+                                <div class="comparison-card java">
+                                    <strong>Java</strong>
+                                    <div class="code-container">
+                                        <pre class="code-block language-java"><code>// Java - imports no topo
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.*;  // Evitar!
+
+// Uso
+ArrayList<String> list = new ArrayList<>();
+HashMap<String, String> map = new HashMap<>();</code></pre>
+                                    </div>
+                                </div>
+                                
+                                <div class="comparison-card python">
+                                    <strong>Python</strong>
+                                    <div class="code-container">
+                                        <pre class="code-block language-python"><code># Python - mais flexível
+from collections import defaultdict
+import json
+
+# Uso direto
+data = defaultdict(list)
+text = json.dumps({"key": "value"})</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="concept-card" id="organizacao">
+                    <h3><i class="fas fa-folder-tree"></i> Organização de Imports</h3>
+                    
+                    <div class="tip-box">
+                        <div class="info-box-content">
+                            <h4>💡 Boas Práticas de Organização</h4>
+                            <p>Organize seus imports em grupos separados por linhas em branco:</p>
+                            <ol>
+                                <li><strong>Biblioteca padrão do Python</strong> (os, sys, json)</li>
+                                <li><strong>Bibliotecas terceiras</strong> (langchain, numpy, pandas)</li>
+                                <li><strong>Módulos locais</strong> do seu projeto</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="code-language">
+                                <i class="fab fa-python"></i> Exemplo de Organização Correta
+                            </div>
+                            <button class="copy-button" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <pre class="code-block language-python line-numbers"><code># 1. Biblioteca padrão do Python
+import os
+import sys
+import json
+from pathlib import Path
+from typing import Dict, List, Optional
+
+# 2. Bibliotecas terceiras
+import numpy as np
+import pandas as pd
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
+from langchain.tools import tool
+from langchain_core.runnables import RunnableWithMessageHistory
+
+# 3. Módulos locais do projeto
+from .config import settings
+from .utils import helper_functions
+from .models import UserModel</code></pre>
+                    </div>
+
+                    <div class="interactive-demo">
+                        <h4><i class="fas fa-gamepad"></i> Teste Interativo: Tipos de Import</h4>
+                        <p>Veja como diferentes tipos de import funcionam:</p>
+                        <div class="demo-controls">
+                            <button class="btn" onclick="showImportExample('basic')">
+                                <i class="fas fa-download"></i> Import Básico
+                            </button>
+                            <button class="btn" onclick="showImportExample('from')">
+                                <i class="fas fa-filter"></i> From Import
+                            </button>
+                            <button class="btn" onclick="showImportExample('alias')">
+                                <i class="fas fa-tag"></i> Com Alias
+                            </button>
+                        </div>
+                        <div id="import-output" class="output-area">Clique em um botão para ver exemplos!</div>
+                    </div>
+                </div>
+
+                <!-- Links Externos para Imports -->
+                <div class="external-links">
+                    <a href="https://docs.python.org/3/tutorial/modules.html" target="_blank" class="external-link">
+                        <div class="external-link-icon">
+                            <i class="fab fa-python"></i>
+                        </div>
+                        <div class="external-link-content">
+                            <h4>Python Modules - Documentação Oficial</h4>
+                            <p>Guia completo sobre módulos e imports</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://realpython.com/python-modules-packages/" target="_blank" class="external-link">
+                        <div class="external-link-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="external-link-content">
+                            <h4>Real Python - Modules and Packages</h4>
+                            <p>Tutorial prático sobre organização de código</p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Seção: Variáveis e Tipos -->
+            <section id="variaveis" class="section fade-in">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h2>Variáveis e Tipos de Dados</h2>
+                </div>
+                
+                <div class="concept-card" id="tipagem-dinamica">
+                    <h3><i class="fas fa-magic"></i> Tipagem Dinâmica vs Estática</h3>
+                    <p>Uma das maiores diferenças entre Python e Java é como lidam com tipos de dados.</p>
+                    
+                    <div class="comparison-grid">
+                        <div class="comparison-card java">
+                            <h4>☕ Java - Tipagem Estática</h4>
+                            <div class="code-container">
+                                <pre class="code-block language-java"><code>// Java - DEVE declarar o tipo
+String nome = "Wesley";
+int idade = 25;
+double temperatura = 36.5;
+boolean ativo = true;
+List<String> lista = new ArrayList<>();
+Map<String, Object> mapa = new HashMap<>();
+
+// Erro se tentar mudar tipo:
+// idade = "vinte e cinco";  // ERRO!</code></pre>
+                            </div>
+                            <ul>
+                                <li>✅ Detecta erros em tempo de compilação</li>
+                                <li>✅ Performance otimizada</li>
+                                <li>✅ IDE oferece melhor autocomplete</li>
+                                <li>❌ Mais verboso</li>
+                                <li>❌ Menos flexível</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="comparison-card python">
+                            <h4>🐍 Python - Tipagem Dinâmica</h4>
+                            <div class="code-container">
+                                <pre class="code-block language-python"><code># Python - tipo inferido automaticamente
+nome = "Wesley"                    # str
+idade = 25                         # int
+temperatura = 36.5                 # float
+ativo = True                       # bool
+lista = ["a", "b", "c"]           # list
+dicionario = {"key": "value"}      # dict
+
+# Pode mudar tipo durante execução:
+idade = "vinte e cinco"            # Agora é str!</code></pre>
+                            </div>
+                            <ul>
+                                <li>✅ Código mais conciso</li>
+                                <li>✅ Muito flexível</li>
+                                <li>✅ Prototipagem rápida</li>
+                                <li>❌ Erros só em tempo de execução</li>
+                                <li>❌ Pode ser confuso em projetos grandes</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="code-language">
+                                <i class="fab fa-python"></i> Verificando Tipos em Python
+                            </div>
+                            <button class="copy-button" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <pre class="code-block language-python line-numbers"><code># Verificando tipos em Python
+nome = "Wesley"
+idade = 25
+temperatura = 36.5
+ativo = True
+lista = [1, 2, 3]
+dicionario = {"nome": "Wesley"}
+
+# Função type() mostra o tipo
+print(type(nome))        # <class 'str'>
+print(type(idade))       # <class 'int'>
+print(type(temperatura)) # <class 'float'>
+print(type(ativo))       # <class 'bool'>
+print(type(lista))       # <class 'list'>
+print(type(dicionario))  # <class 'dict'>
+
+# Função isinstance() verifica se é de um tipo
+print(isinstance(nome, str))        # True
+print(isinstance(idade, int))       # True
+print(isinstance(lista, list))      # True
+print(isinstance(idade, str))       # False
+
+# Verificação múltipla
+print(isinstance(idade, (int, float)))  # True (é int OU float)
+
+# Exemplo prático do projeto
+def processar_input(user_input):
+    """Processa entrada do usuário de forma flexível."""
+    if isinstance(user_input, str):
+        return user_input.strip().lower()
+    elif isinstance(user_input, (int, float)):
+        return str(user_input)
+    elif isinstance(user_input, dict):
+        return json.dumps(user_input)
+    else:
+        return str(user_input)</code></pre>
+                    </div>
+                </div>
+
+                <div class="concept-card" id="type-hints">
+                    <h3><i class="fas fa-tags"></i> Type Hints - O Melhor dos Dois Mundos</h3>
+                    <p>Python 3.5+ permite adicionar dicas de tipo, combinando flexibilidade com clareza!</p>
+                    
+                    <div class="info-box-info">
+                        <div class="info-box-content">
+                            <h4>Por que usar Type Hints?</h4>
+                            <ul>
+                                <li><strong>Documentação:</strong> Código autodocumentado</li>
+                                <li><strong>IDE:</strong> Melhor autocomplete e detecção de erros</li>
+                                <li><strong>Manutenção:</strong> Mais fácil entender código antigo</li>
+                                <li><strong>Ferramentas:</strong> mypy pode verificar tipos</li>
+                                <li><strong>Colaboração:</strong> Outros devs entendem melhor</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="code-language">
+                                <i class="fab fa-python"></i> Type Hints em Ação
+                            </div>
+                            <button class="copy-button" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <pre class="code-block language-python line-numbers"><code># Importando tipos para hints
+from typing import Dict, List, Optional, Union, Tuple, Any
+
+# Variáveis com type hints
+nome: str = "Wesley"
+idade: int = 25
+temperatura: float = 36.5
+ativo: bool = True
+lista_numeros: List[int] = [1, 2, 3, 4, 5]
+configuracao: Dict[str, Any] = {"debug": True, "port": 8080}
+
+# Funções com type hints (do projeto!)
+def calculator(expression: str) -> str:
+    """Calcula uma expressão matemática."""
+    try:
+        result = eval(expression)
+        return str(result)
+    except Exception as e:
+        return f"Error: {e}"
+
+def get_session_history(session_id: str) -> InMemoryChatMessageHistory:
+    """Retorna o histórico da sessão."""
+    if session_id not in session_store:
+        session_store[session_id] = InMemoryChatMessageHistory()
+    return session_store[session_id]
+
+# Tipos mais complexos
+def processar_dados(
+    dados: List[Dict[str, Union[str, int]]], 
+    filtro: Optional[str] = None
+) -> Tuple[List[Dict], int]:
+    """
+    Processa uma lista de dicionários.
+    
+    Args:
+        dados: Lista de dicionários com dados
+        filtro: Filtro opcional para aplicar
+        
+    Returns:
+        Tupla com (dados_processados, quantidade)
+    """
+    if filtro:
+        dados_filtrados = [d for d in dados if filtro in str(d)]
+    else:
+        dados_filtrados = dados
+    
+    return dados_filtrados, len(dados_filtrados)
+
+# Exemplo real do projeto LangChain
+from langchain_core.messages import BaseMessage
+from langchain_core.runnables import Runnable
+
+def create_chain(
+    llm: ChatOpenAI,
+    prompt: str,
+    tools: List[str],
+    memory: Optional[Any] = None
+) -> Runnable[Dict[str, Any], BaseMessage]:
+    """Cria uma chain do LangChain tipada."""
+    # Implementação aqui
+    pass
+
+# Type hints para dicionários específicos
+UserData = Dict[str, Union[str, int, bool]]
+ConfigData = Dict[str, Any]
+
+def criar_usuario(dados: UserData) -> bool:
+    """Cria um usuário com dados tipados."""
+    required_fields = ["nome", "email", "idade"]
+    return all(field in dados for field in required_fields)</code></pre>
+                    </div>
+
+                    <div class="warning-box">
+                        <div class="info-box-content">
+                            <h4>⚠️ Type Hints são Opcionais!</h4>
+                            <p>Type hints em Python são apenas <strong>dicas</strong>. O Python não força os tipos em tempo de execução. Para verificação real, use ferramentas como <code>mypy</code>:</p>
+                            <div class="code-container">
+                                <pre class="code-block language-bash"><code># Instalar mypy
+pip install mypy
+
+# Verificar tipos
+mypy meu_arquivo.py</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="interactive-demo">
+                        <h4><i class="fas fa-gamepad"></i> Verificador de Tipos</h4>
+                        <p>Digite um valor e veja que tipo o Python detecta:</p>
+                        <div class="demo-controls">
+                            <input type="text" id="type-input" placeholder="Digite um valor (ex: 42, 'texto', [1,2,3])" style="padding: 0.5rem; border-radius: 0.375rem; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 300px;">
+                            <button class="btn" onclick="checkType()">
+                                <i class="fas fa-search"></i> Verificar Tipo
+                            </button>
+                        </div>
+                        <div id="type-output" class="output-area">Digite algo e clique em "Verificar Tipo"!</div>
+                    </div>
+                </div>
+
+                <!-- Links Externos para Variáveis -->
+                <div class="external-links">
+                    <a href="https://docs.python.org/3/library/typing.html" target="_blank" class="external-link">
+                        <div class="external-link-icon">
+                            <i class="fab fa-python"></i>
+                        </div>
+                        <div class="external-link-content">
+                            <h4>Python Typing - Documentação Oficial</h4>
+                            <p>Referência completa sobre type hints</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://mypy.readthedocs.io/" target="_blank" class="external-link">
+                        <div class="external-link-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="external-link-content">
+                            <h4>MyPy - Type Checker</h4>
+                            <p>Ferramenta para verificação estática de tipos</p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+
+            <!-- Seção: Dicionários -->
+            <section id="dicionarios" class="section fade-in">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h2>Dicionários - A Estrutura Fundamental</h2>
+                </div>
+                
+                <div class="concept-card important">
+                    <h3><i class="fas fa-star"></i> Por que Dicionários são TÃO Importantes?</h3>
+                    <p>Dicionários são <strong>EXTREMAMENTE</strong> usados em Python e no projeto LangChain! Eles são como HashMap em Java, mas muito mais poderosos e flexíveis.</p>
+                    
+                    <div class="info-box-info">
+                        <div class="info-box-content">
+                            <h4>Onde você vê dicionários no projeto:</h4>
+                            <ul>
+                                <li><strong>Configurações:</strong> <code>{"temperature": 0.7, "model": "gpt-4"}</code></li>
+                                <li><strong>Dados de entrada:</strong> <code>{"input": "Olá", "session_id": "123"}</code></li>
+                                <li><strong>Respostas de API:</strong> <code>{"content": "Resposta", "tokens": 50}</code></li>
+                                <li><strong>Metadados:</strong> <code>{"source": "doc.pdf", "page": 1}</code></li>
+                                <li><strong>Session store:</strong> <code>session_store[session_id] = history</code></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="comparison-grid">
+                        <div class="comparison-card java">
+                            <h4>☕ Java - HashMap</h4>
+                            <div class="code-container">
+                                <pre class="code-block language-java"><code>// Java - mais verboso
+Map<String, Object> config = new HashMap<>();
+config.put("temperature", 0.7);
+config.put("model", "gpt-4");
+config.put("max_tokens", 1000);
+
+// Acessar
+String model = (String) config.get("model");
+// Precisa cast!
+
+// Verificar existência
+if (config.containsKey("temperature")) {
+    // ...
+}</code></pre>
+                            </div>
+                        </div>
+                        
+                        <div class="comparison-card python">
+                            <h4>🐍 Python - Dict</h4>
+                            <div class="code-container">
+                                <pre class="code-block language-python"><code># Python - muito mais simples
+config = {
+    "temperature": 0.7,
+    "model": "gpt-4",
+    "max_tokens": 1000
+}
+
+# Acessar
+model = config["model"]  # Direto!
+
+# Verificar existência
+if "temperature" in config:
+    # ...</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="concept-card" id="dict-basico">
+                    <h3><i class="fas fa-play"></i> Operações Básicas com Dicionários</h3>
+                    
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="code-language">
+                                <i class="fab fa-python"></i> Criando e Manipulando Dicionários
+                            </div>
+                            <button class="copy-button" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <pre class="code-block language-python line-numbers"><code># 1. CRIANDO dicionários
+# Forma literal (mais comum)
+pessoa = {
+    "nome": "Wesley",
+    "idade": 25,
+    "cidade": "São Paulo",
+    "ativo": True,
+    "skills": ["Python", "Java", "JavaScript"]
+}
+
+# Forma com construtor
+config = dict(host="localhost", porta=8080, debug=True)
+
+# Dicionário vazio
+dados = {}
+# ou
+dados = dict()
+
+# 2. ACESSANDO valores
+nome = pessoa["nome"]           # "Wesley"
+idade = pessoa["idade"]         # 25
+
+# ⚠️ CUIDADO: KeyError se chave não existir!
+# email = pessoa["email"]  # KeyError!
+
+# 3. ACESSANDO com segurança
+email = pessoa.get("email")                    # None se não existir
+email = pessoa.get("email", "não informado")   # Valor padrão
+
+# 4. MODIFICANDO valores
+pessoa["email"] = "wesley@example.com"  # Adiciona nova chave
+pessoa["idade"] = 26                    # Modifica existente
+
+# 5. ADICIONANDO múltiplos valores
+pessoa.update({
+    "telefone": "(11) 99999-9999",
+    "profissao": "Desenvolvedor"
+})
+
+# Ou usando argumentos nomeados
+pessoa.update(salario=5000, experiencia="5 anos")
+
+print(pessoa)
+# {
+#     'nome': 'Wesley', 
+#     'idade': 26, 
+#     'cidade': 'São Paulo', 
+#     'ativo': True, 
+#     'skills': ['Python', 'Java', 'JavaScript'], 
+#     'email': 'wesley@example.com', 
+#     'telefone': '(11) 99999-9999', 
+#     'profissao': 'Desenvolvedor', 
+#     'salario': 5000, 
+#     'experiencia': '5 anos'
+# }</code></pre>
+                    </div>
+                </div>
+
+                <div class="concept-card" id="dict-metodos">
+                    <h3><i class="fas fa-tools"></i> Métodos Importantes dos Dicionários</h3>
+                    
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="code-language">
+                                <i class="fab fa-python"></i> Métodos Essenciais para o Projeto
+                            </div>
+                            <button class="copy-button" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <pre class="code-block language-python line-numbers"><code># Dicionário de exemplo
+config = {
+    "model": "gpt-4",
+    "temperature": 0.7,
+    "max_tokens": 1000,
+    "stream": False
+}
+
+# 1. KEYS() - Todas as chaves
+chaves = config.keys()
+print(list(chaves))  # ['model', 'temperature', 'max_tokens', 'stream']
+
+# 2. VALUES() - Todos os valores
+valores = config.values()
+print(list(valores))  # ['gpt-4', 0.7, 1000, False]
+
+# 3. ITEMS() - Pares chave-valor (MUITO USADO!)
+for chave, valor in config.items():
+    print(f"{chave}: {valor}")
+# model: gpt-4
+# temperature: 0.7
+# max_tokens: 1000
+# stream: False
+
+# 4. GET() - Acesso seguro (JÁ VIMOS)
+model = config.get("model", "gpt-3.5-turbo")  # Valor padrão
+timeout = config.get("timeout", 30)           # 30 se não existir
+
+# 5. SETDEFAULT() - Define valor se não existir
+config.setdefault("timeout", 30)      # Só adiciona se não existir
+config.setdefault("model", "gpt-3.5") # Não muda, já existe
+
+print(config)  # Agora tem 'timeout': 30
+
+# 6. POP() - Remove e retorna valor
+stream_value = config.pop("stream")        # Remove e retorna False
+timeout = config.pop("timeout", 60)       # Remove ou retorna padrão
+
+# 7. POPITEM() - Remove último item (Python 3.7+)
+ultimo_item = config.popitem()  # Remove e retorna ('max_tokens', 1000)
+
+# 8. CLEAR() - Remove tudo
+backup = config.copy()  # Faz cópia antes
+config.clear()          # Agora está vazio: {}
+config = backup         # Restaura
+
+# 9. COPY() - Cópia superficial
+config_copy = config.copy()
+config_copy["model"] = "gpt-3.5"  # Não afeta o original
+
+# 10. UPDATE() - Mescla dicionários (JÁ VIMOS)
+novos_params = {"temperature": 0.9, "top_p": 0.95}
+config.update(novos_params)
+
+# 11. IN / NOT IN - Verificação de existência (MUITO USADO!)
+if "model" in config:
+    print(f"Modelo: {config['model']}")
+
+if "api_key" not in config:
+    config["api_key"] = os.getenv("OPENAI_API_KEY")
+
+# 12. LEN() - Quantidade de itens
+print(f"Configuração tem {len(config)} parâmetros")
+
+# EXEMPLO PRÁTICO DO PROJETO
+def configurar_llm(**kwargs):
+    """Configura LLM com parâmetros flexíveis."""
+    # Configuração padrão
+    default_config = {
+        "model": "gpt-3.5-turbo",
+        "temperature": 0.7,
+        "max_tokens": 1000,
+        "timeout": 30
+    }
+    
+    # Mescla com parâmetros fornecidos
+    final_config = default_config.copy()
+    final_config.update(kwargs)
+    
+    # Validação
+    if "api_key" not in final_config:
+        final_config["api_key"] = os.getenv("OPENAI_API_KEY")
+    
+    # Log da configuração
+    print("Configuração do LLM:")
+    for key, value in final_config.items():
+        if key != "api_key":  # Não mostra a chave
+            print(f"  {key}: {value}")
+    
+    return final_config
+
+# Uso
+config1 = configurar_llm()
+config2 = configurar_llm(model="gpt-4", temperature=0.2)
+config3 = configurar_llm(model="gpt-4", max_tokens=2000, stream=True)</code></pre>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Método</th>
+                                    <th>Descrição</th>
+                                    <th>Retorna</th>
+                                    <th>Uso no Projeto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>.get(key, default)</code></td>
+                                    <td>Acesso seguro a valores</td>
+                                    <td>Valor ou default</td>
+                                    <td>Configurações opcionais</td>
+                                </tr>
+                                <tr>
+                                    <td><code>.items()</code></td>
+                                    <td>Itera sobre pares chave-valor</td>
+                                    <td>dict_items</td>
+                                    <td>Processar configurações</td>
+                                </tr>
+                                <tr>
+                                    <td><code>.update(other)</code></td>
+                                    <td>Mescla dicionários</td>
+                                    <td>None (modifica)</td>
+                                    <td>Combinar configs</td>
+                                </tr>
+                                <tr>
+                                    <td><code>.setdefault(key, default)</code></td>
+                                    <td>Define se não existir</td>
+                                    <td>Valor existente ou novo</td>
+                                    <td>Inicializar listas/dicts</td>
+                                </tr>
+                                <tr>
+                                    <td><code>key in dict</code></td>
+                                    <td>Verifica existência</td>
+                                    <td>bool</td>
+                                    <td>Validação de parâmetros</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="concept-card" id="dict-projeto">
+                    <h3><i class="fas fa-project-diagram"></i> Uso Real no Projeto LangChain</h3>
+                    
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="code-language">
+                                <i class="fab fa-python"></i> Exemplos Reais do Projeto
+                            </div>
+                            <button class="copy-button" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <pre class="code-block language-python line-numbers"><code># 1. SESSION STORE - Armazenamento de histórico
+session_store: Dict[str, InMemoryChatMessageHistory] = {}
+
+def get_session_history(session_id: str) -> InMemoryChatMessageHistory:
+    """Gerencia histórico de sessões usando dicionário."""
+    # Verifica se sessão existe
+    if session_id not in session_store:
+        # Cria nova sessão se não existir
+        session_store[session_id] = InMemoryChatMessageHistory()
+    
+    return session_store[session_id]
+
+# 2. CONFIGURAÇÃO DE CHAINS
+def create_conversational_chain(**config):
+    """Cria chain conversacional com configuração flexível."""
+    # Configuração padrão
+    default_config = {
+        "input_messages_key": "input",
+        "history_messages_key": "history",
+        "output_messages_key": "answer"
+    }
+    
+    # Mescla configurações
+    chain_config = {**default_config, **config}
+    
+    # Usa os valores do dicionário
+    return RunnableWithMessageHistory(
+        chain,
+        get_session_history,
+        input_messages_key=chain_config["input_messages_key"],
+        history_messages_key=chain_config["history_messages_key"],
+        output_messages_key=chain_config.get("output_messages_key")
+    )
+
+# 3. PROCESSAMENTO DE ENTRADA DO USUÁRIO
+def process_user_input(user_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Processa entrada do usuário."""
+    # Validação de campos obrigatórios
+    required_fields = ["input", "session_id"]
+    for field in required_fields:
+        if field not in user_data:
+            raise ValueError(f"Campo obrigatório '{field}' não fornecido")
+    
+    # Configuração padrão
+    processed_data = {
+        "input": user_data["input"].strip(),
+        "session_id": user_data["session_id"],
+        "timestamp": datetime.now().isoformat(),
+        "metadata": {}
+    }
+    
+    # Adiciona metadados opcionais
+    optional_fields = ["user_id", "context", "preferences"]
+    for field in optional_fields:
+        if field in user_data:
+            processed_data["metadata"][field] = user_data[field]
+    
+    return processed_data
+
+# 4. CONFIGURAÇÃO DE TOOLS
+def setup_tools() -> List[Dict[str, Any]]:
+    """Configura ferramentas disponíveis."""
+    tools_config = [
+        {
+            "name": "calculator",
+            "description": "Evaluate mathematical expressions",
+            "function": calculator,
+            "return_direct": True
+        },
+        {
+            "name": "search",
+            "description": "Search for information",
+            "function": search_tool,
+            "return_direct": False,
+            "timeout": 30
+        }
+    ]
+    
+    # Processa configuração de cada tool
+    processed_tools = []
+    for tool_config in tools_config:
+        # Validação
+        if "name" not in tool_config or "function" not in tool_config:
+            continue
+        
+        # Configuração padrão para tool
+        tool_data = {
+            "name": tool_config["name"],
+            "description": tool_config.get("description", ""),
+            "function": tool_config["function"],
+            "return_direct": tool_config.get("return_direct", False),
+            "timeout": tool_config.get("timeout", 60)
+        }
+        
+        processed_tools.append(tool_data)
+    
+    return processed_tools
+
+# 5. RESPOSTA ESTRUTURADA
+def format_response(content: str, **metadata) -> Dict[str, Any]:
+    """Formata resposta de forma estruturada."""
+    response = {
+        "content": content,
+        "timestamp": datetime.now().isoformat(),
+        "status": "success",
+        "metadata": {}
+    }
+    
+    # Adiciona metadados fornecidos
+    response["metadata"].update(metadata)
+    
+    # Adiciona informações automáticas
+    response["metadata"].update({
+        "content_length": len(content),
+        "word_count": len(content.split()),
+        "response_id": str(uuid.uuid4())
+    })
+    
+    return response
+
+# 6. EXEMPLO DE USO COMPLETO
+def main():
+    """Exemplo de uso completo com dicionários."""
+    # Entrada do usuário
+    user_input = {
+        "input": "Quanto é 2 + 2?",
+        "session_id": "user_123",
+        "user_id": "wesley",
+        "preferences": {"language": "pt-BR"}
+    }
+    
+    # Processa entrada
+    processed_input = process_user_input(user_input)
+    print("Entrada processada:", processed_input)
+    
+    # Configura chain
+    chain = create_conversational_chain(
+        input_messages_key="input",
+        history_messages_key="history"
+    )
+    
+    # Configuração para invoke
+    config = {
+        "configurable": {
+            "session_id": processed_input["session_id"]
+        }
+    }
+    
+    # Simula resposta
+    response_content = "2 + 2 = 4"
+    
+    # Formata resposta
+    response = format_response(
+        response_content,
+        session_id=processed_input["session_id"],
+        tool_used="calculator",
+        confidence=0.99
+    )
+    
+    print("Resposta formatada:", response)
+
+if __name__ == "__main__":
+    main()</code></pre>
+                    </div>
+
+                    <div class="tip-box">
+                        <div class="info-box-content">
+                            <h4>💡 Padrões Comuns com Dicionários no Projeto</h4>
+                            <ul>
+                                <li><strong>Session Store:</strong> <code>session_store[session_id] = history</code></li>
+                                <li><strong>Configuração:</strong> <code>config.get("temperature", 0.7)</code></li>
+                                <li><strong>Metadados:</strong> <code>{"source": "doc.pdf", "page": 1}</code></li>
+                                <li><strong>Entrada/Saída:</strong> <code>{"input": "pergunta", "output": "resposta"}</code></li>
+                                <li><strong>Validação:</strong> <code>if "required_field" in data:</code></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="interactive-demo">
+                        <h4><i class="fas fa-gamepad"></i> Simulador de Session Store</h4>
+                        <p>Veja como o session store funciona na prática:</p>
+                        <div class="demo-controls">
+                            <input type="text" id="session-id" placeholder="ID da sessão (ex: user_123)" style="padding: 0.5rem; border-radius: 0.375rem; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 200px;">
+                            <input type="text" id="message-input" placeholder="Mensagem" style="padding: 0.5rem; border-radius: 0.375rem; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 200px;">
+                            <button class="btn" onclick="addMessage()">
+                                <i class="fas fa-plus"></i> Adicionar Mensagem
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSessions()">
+                                <i class="fas fa-list"></i> Ver Sessões
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearSessions()">
+                                <i class="fas fa-trash"></i> Limpar
+                            </button>
+                        </div>
+                        <div id="session-output" class="output-area">Session Store vazio. Adicione algumas mensagens!</div>
+                    </div>
+                </div>
+
+                <!-- Links Externos para Dicionários -->
+                <div class="external-links">
+                    <a href="https://docs.python.org/3/tutorial/datastructures.html#dictionaries" target="_blank" class="external-link">
+                        <div class="external-link-icon">
+                            <i class="fab fa-python"></i>
+                        </div>
+                        <div class="external-link-content">
+                            <h4>Python Dictionaries - Documentação Oficial</h4>
+                            <p>Guia completo sobre dicionários em Python</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://realpython.com/python-dicts/" target="_blank" class="external-link">
+                        <div class="external-link-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="external-link-content">
+                            <h4>Real Python - Dictionaries</h4>
+                            <p>Tutorial avançado sobre dicionários</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://python.langchain.com/docs/modules/memory/" target="_blank" class="external-link">
+                        <div class="external-link-icon">
+                            <i class="fas fa-memory"></i>
+                        </div>
+                        <div class="external-link-content">
+                            <h4>LangChain Memory</h4>
+                            <p>Como dicionários são usados para memória</p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+
+            <!-- Seção: Exercícios Práticos -->
+            <section id="exercicios" class="section fade-in">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <h2>Exercícios Práticos</h2>
+                </div>
+                
+                <div class="concept-card">
+                    <h3><i class="fas fa-tasks"></i> Checklist de Conceitos</h3>
+                    <p>Marque os conceitos que você já domina:</p>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress"></div>
+                        </div>
+                        <div class="progress-text" id="progress-text">0% concluído</div>
+                    </div>
+                    
+                    <div class="checklist">
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check1" onchange="updateProgress()">
+                            <label for="check1">Argumentos posicionais vs nomeados</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check2" onchange="updateProgress()">
+                            <label for="check2">*args e **kwargs</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check3" onchange="updateProgress()">
+                            <label for="check3">Dicionários e métodos (.get, .items, .update)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check4" onchange="updateProgress()">
+                            <label for="check4">Imports e organização de módulos</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check5" onchange="updateProgress()">
+                            <label for="check5">Variáveis e tipagem dinâmica</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check6" onchange="updateProgress()">
+                            <label for="check6">Type hints</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check7" onchange="updateProgress()">
+                            <label for="check7">Funções e decoradores</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check8" onchange="updateProgress()">
+                            <label for="check8">Classes e métodos mágicos</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check9" onchange="updateProgress()">
+                            <label for="check9">Controle de fluxo (if/for/while)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check10" onchange="updateProgress()">
+                            <label for="check10">Tratamento de exceções</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check11" onchange="updateProgress()">
+                            <label for="check11">Listas e slicing</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check12" onchange="updateProgress()">
+                            <label for="check12">List comprehensions</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check13" onchange="updateProgress()">
+                            <label for="check13">Tuplas e desempacotamento</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check14" onchange="updateProgress()">
+                            <label for="check14">Sets e operações</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check15" onchange="updateProgress()">
+                            <label for="check15">Lambda functions</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check16" onchange="updateProgress()">
+                            <label for="check16">Context managers (with statement)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check17" onchange="updateProgress()">
+                            <label for="check17">Geradores e yield</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check18" onchange="updateProgress()">
+                            <label for="check18">F-strings e formatação</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check19" onchange="updateProgress()">
+                            <label for="check19">Operadores (in, is, %)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check20" onchange="updateProgress()">
+                            <label for="check20">Conceitos do projeto LangChain</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="concept-card">
+                    <h3><i class="fas fa-graduation-cap"></i> Próximos Passos</h3>
+                    <div class="tip-box">
+                        <div class="info-box-content">
+                            <h4>Agora que você domina Python, você pode:</h4>
+                            <ol>
+                                <li>✅ Ler e entender todos os códigos do projeto LangChain</li>
+                                <li>✅ Modificar os exemplos para seus próprios casos de uso</li>
+                                <li>✅ Criar suas próprias chains e pipelines</li>
+                                <li>✅ Integrar diferentes modelos de IA</li>
+                                <li>✅ Debugar erros quando surgirem</li>
+                                <li>✅ Contribuir com melhorias no projeto</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="info-box-info">
+                        <div class="info-box-content">
+                            <h4>Sugestão de Estudo:</h4>
+                            <ul>
+                                <li>Comece com os arquivos em <code>1-fundamentos/</code></li>
+                                <li>Execute cada exemplo e modifique os parâmetros</li>
+                                <li>Tente criar variações dos exemplos</li>
+                                <li>Consulte a documentação do LangChain quando necessário</li>
+                                <li>Pratique criando seus próprios tools e chains</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seção: Recursos Externos -->
+            <section id="recursos-externos" class="section fade-in">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-external-link-alt"></i>
+                    </div>
+                    <h2>Recursos Externos</h2>
+                </div>
+                
+                <div class="concept-card">
+                    <h3><i class="fas fa-book-open"></i> Documentação Oficial</h3>
+                    <div class="external-links">
+                        <a href="https://docs.python.org/3/" target="_blank" class="external-link">
+                            <div class="external-link-icon">
+                                <i class="fab fa-python"></i>
+                            </div>
+                            <div class="external-link-content">
+                                <h4>Python.org - Documentação Oficial</h4>
+                                <p>A fonte definitiva para tudo sobre Python</p>
+                            </div>
+                        </a>
+                        
+                        <a href="https://python.langchain.com/" target="_blank" class="external-link">
+                            <div class="external-link-icon">
+                                <i class="fas fa-link"></i>
+                            </div>
+                            <div class="external-link-content">
+                                <h4>LangChain Documentation</h4>
+                                <p>Documentação completa do LangChain</p>
+                            </div>
+                        </a>
+                        
+                        <a href="https://platform.openai.com/docs" target="_blank" class="external-link">
+                            <div class="external-link-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="external-link-content">
+                                <h4>OpenAI API Documentation</h4>
+                                <p>Documentação da API do OpenAI</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="concept-card">
+                    <h3><i class="fas fa-graduation-cap"></i> Tutoriais e Cursos</h3>
+                    <div class="external-links">
+                        <a href="https://realpython.com/" target="_blank" class="external-link">
+                            <div class="external-link-icon">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="external-link-content">
+                                <h4>Real Python</h4>
+                                <p>Tutoriais práticos e avançados de Python</p>
+                            </div>
+                        </a>
+                        
+                        <a href="https://www.python.org/dev/peps/pep-0008/" target="_blank" class="external-link">
+                            <div class="external-link-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div class="external-link-content">
+                                <h4>PEP 8 - Style Guide</h4>
+                                <p>Guia oficial de estilo de código Python</p>
+                            </div>
+                        </a>
+                        
+                        <a href="https://github.com/langchain-ai/langchain" target="_blank" class="external-link">
+                            <div class="external-link-icon">
+                                <i class="fab fa-github"></i>
+                            </div>
+                            <div class="external-link-content">
+                                <h4>LangChain GitHub</h4>
+                                <p>Código fonte e exemplos do LangChain</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="concept-card">
+                    <h3><i class="fas fa-tools"></i> Ferramentas Úteis</h3>
+                    <div class="external-links">
+                        <a href="https://mypy.readthedocs.io/" target="_blank" class="external-link">
+                            <div class="external-link-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="external-link-content">
+                                <h4>MyPy</h4>
+                                <p>Verificador estático de tipos para Python</p>
+                            </div>
+                        </a>
+                        
+                        <a href="https://black.readthedocs.io/" target="_blank" class="external-link">
+                            <div class="external-link-icon">
+                                <i class="fas fa-paint-brush"></i>
+                            </div>
+                            <div class="external-link-content">
+                                <h4>Black</h4>
+                                <p>Formatador automático de código Python</p>
+                            </div>
+                        </a>
+                        
+                        <a href="https://jupyter.org/" target="_blank" class="external-link">
+                            <div class="external-link-icon">
+                                <i class="fas fa-laptop-code"></i>
+                            </div>
+                            <div class="external-link-content">
+                                <h4>Jupyter Notebook</h4>
+                                <p>Ambiente interativo para experimentar código</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" onclick="scrollToTop()">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Scripts -->
+    <!-- Prism.js para Syntax Highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
+
+    <script>
+        // Variáveis globais
+        let sessionStore = {};
+        
+        // Função para toggle da sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            
+            sidebar.classList.toggle('hidden');
+            mainContent.classList.toggle('sidebar-hidden');
+        }
+
+        // Função para toggle do tema (placeholder)
+        function toggleTheme() {
+            // Implementar mudança de tema se necessário
+            console.log('Toggle theme');
+        }
+
+        // Função para scroll suave
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Função para voltar ao topo
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Mostrar/esconder botão de voltar ao topo
+        window.addEventListener('scroll', function() {
+            const backToTop = document.getElementById('backToTop');
+            if (window.pageYOffset > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        // Exemplos de Argumentos
+        function showArgExample(type) {
+            const output = document.getElementById('args-output');
+            const examples = {
+                'posicionais': `<strong>Apenas Argumentos Posicionais:</strong>
+<pre># Definição:
+def criar_usuario(nome, idade, cidade):
+    return f"{nome}, {idade} anos, de {cidade}"
+
+# Chamada: ordem importa!
+criar_usuario("João", 25, "São Paulo")
+# nome="João", idade=25, cidade="São Paulo"
+
+# ❌ Erro se trocar ordem:
+criar_usuario(25, "João", "São Paulo")  # Dados trocados!</pre>`,
+                
+                'nomeados': `<strong>Com Argumentos Nomeados:</strong>
+<pre># Mesma função, mas chamando com nomes:
+criar_usuario(
+    cidade="Rio",     # Posso mudar a ordem!
+    idade=30,
+    nome="Maria"
+)
+# Funciona perfeitamente!
+
+# Misturando (posicionais primeiro):
+criar_usuario("Ana", idade=28, cidade="Brasília")</pre>`,
+                
+                'misturado': `<strong>Misturando (como no projeto!):</strong>
+<pre># Do projeto - argumentos obrigatórios primeiro, opcionais depois:
+ChatOpenAI(
+    "gpt-4",              # posicional (model)
+    temperature=0.7,      # nomeado
+    max_tokens=100        # nomeado
+)
+
+RunnableWithMessageHistory(
+    chain,                           # posicional
+    get_session_history,             # posicional
+    input_messages_key="input",     # nomeado
+    history_messages_key="history"   # nomeado
+)</pre>`,
+                
+                'kwargs': `<strong>Usando **kwargs:</strong>
+<pre># Função que aceita qualquer argumento nomeado:
+def configurar(**kwargs):
+    for chave, valor in kwargs.items():
+        print(f"{chave} = {valor}")
+
+# Posso passar QUALQUER coisa:
+configurar(
+    host="localhost",
+    porta=8080,
+    debug=True,
+    timeout=30,
+    qualquer_coisa="funciona!"
+)
+
+# Do projeto - passando dict como kwargs:
+config = {"temperature": 0.5, "model": "gpt-4"}
+ChatOpenAI(**config)  # Desempacota o dict!</pre>`
+            };
+            
+            output.innerHTML = examples[type] || 'Exemplo não encontrado';
+        }
+
+        // Exemplos de Import
+        function showImportExample(type) {
+            const output = document.getElementById('import-output');
+            const examples = {
+                'basic': `<strong>Import Básico:</strong>
+<pre>import os
+import sys
+import json
+
+# Uso:
+os.getcwd()  # Diretório atual
+sys.version  # Versão do Python
+json.loads('{"key": "value"}')</pre>`,
+                
+                'from': `<strong>From Import:</strong>
+<pre>from langchain_openai import ChatOpenAI
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Uso direto:
+model = ChatOpenAI()
+load_dotenv()
+path = Path("arquivo.txt")</pre>`,
+                
+                'alias': `<strong>Com Alias (Apelido):</strong>
+<pre>import numpy as np
+import pandas as pd
+from langchain_core.runnables import RunnableLambda as RL
+
+# Uso com apelido:
+array = np.array([1, 2, 3])
+df = pd.DataFrame(data)
+runnable = RL(function)</pre>`
+            };
+            
+            output.innerHTML = examples[type] || 'Exemplo não encontrado';
+        }
+
+        // Verificador de tipos
+        function checkType() {
+            const input = document.getElementById('type-input').value;
+            const output = document.getElementById('type-output');
+            
+            let tipo = '';
+            let exemplo = '';
+            
+            // Detectar tipo baseado no valor
+            if (input === '') {
+                tipo = 'Vazio (digite algo)';
+            } else if (input === 'None' || input === 'null') {
+                tipo = 'None';
+                exemplo = 'Representa ausência de valor (null em Java)';
+            } else if (input === 'True' || input === 'False') {
+                tipo = 'bool (Boolean)';
+                exemplo = 'Verdadeiro ou Falso (boolean em Java)';
+            } else if (!isNaN(input) && input.trim() !== '') {
+                if (input.includes('.')) {
+                    tipo = 'float';
+                    exemplo = `Número decimal: ${parseFloat(input)} (double em Java)`;
+                } else {
+                    tipo = 'int';
+                    exemplo = `Número inteiro: ${parseInt(input)} (int/long em Java)`;
+                }
+            } else if (input.startsWith('[') && input.endsWith(']')) {
+                tipo = 'list';
+                exemplo = 'Lista de elementos (ArrayList em Java)';
+            } else if (input.startsWith('{') && input.endsWith('}')) {
+                tipo = 'dict';
+                exemplo = 'Dicionário chave-valor (HashMap em Java)';
+            } else if (input.startsWith('(') && input.endsWith(')')) {
+                tipo = 'tuple';
+                exemplo = 'Tupla imutável (não existe equivalente direto em Java)';
+            } else {
+                tipo = 'str (String)';
+                exemplo = `Texto com ${input.length} caracteres (String em Java)`;
+            }
+            
+            output.innerHTML = `
+                <strong>Tipo detectado:</strong> <span style="color: var(--primary-color); font-weight: bold;">${tipo}</span><br>
+                <strong>Descrição:</strong> ${exemplo}<br>
+                <strong>Em Python seria:</strong> <code>type("${input}")</code> → <code>&lt;class '${tipo.split(' ')[0]}'&gt;</code>
+            `;
+        }
+
+        // Simulador de Session Store
+        function addMessage() {
+            const sessionId = document.getElementById('session-id').value.trim();
+            const message = document.getElementById('message-input').value.trim();
+            
+            if (!sessionId || !message) {
+                alert('Por favor, preencha o ID da sessão e a mensagem');
+                return;
+            }
+            
+            // Inicializa sessão se não existir
+            if (!sessionStore[sessionId]) {
+                sessionStore[sessionId] = [];
+            }
+            
+            // Adiciona mensagem
+            sessionStore[sessionId].push({
+                content: message,
+                timestamp: new Date().toLocaleTimeString()
+            });
+            
+            // Limpa input
+            document.getElementById('message-input').value = '';
+            
+            // Atualiza display
+            showSessions();
+        }
+
+        function showSessions() {
+            const output = document.getElementById('session-output');
+            
+            if (Object.keys(sessionStore).length === 0) {
+                output.innerHTML = 'Session Store vazio. Adicione algumas mensagens!';
+                return;
+            }
+            
+            let html = '<strong>Session Store:</strong>\n\n';
+            
+            for (const [sessionId, messages] of Object.entries(sessionStore)) {
+                html += `<strong>Sessão "${sessionId}":</strong>\n`;
+                messages.forEach((msg, index) => {
+                    html += `  ${index + 1}. [${msg.timestamp}] ${msg.content}\n`;
+                });
+                html += '\n';
+            }
+            
+            html += `<strong>Total de sessões:</strong> ${Object.keys(sessionStore).length}`;
+            
+            output.innerHTML = html;
+        }
+
+        function clearSessions() {
+            sessionStore = {};
+            document.getElementById('session-output').innerHTML = 'Session Store limpo!';
+        }
+
+        // Progress tracker
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('.checklist input[type="checkbox"]');
+            const checked = document.querySelectorAll('.checklist input[type="checkbox"]:checked');
+            const percentage = Math.round((checked.length / checkboxes.length) * 100);
+            
+            const progressFill = document.getElementById('progress');
+            const progressText = document.getElementById('progress-text');
+            
+            progressFill.style.width = percentage + '%';
+            progressText.textContent = `${percentage}% concluído (${checked.length}/${checkboxes.length} conceitos)`;
+            
+            if (percentage === 100) {
+                progressText.innerHTML = `🎉 Parabéns! Você domina todos os conceitos! 🎉`;
+                progressText.style.color = 'var(--success-color)';
+            }
+        }
+
+        // Função para copiar código
+        function copyCode(button) {
+            const codeBlock = button.closest('.code-container').querySelector('code');
+            const text = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(text).then(function() {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                button.style.background = 'var(--success-color)';
+                
+                setTimeout(function() {
+                    button.innerHTML = originalText;
+                    button.style.background = 'var(--primary-color)';
+                }, 2000);
+            });
+        }
+
+        // Navegação ativa na sidebar
+        function updateActiveNavigation() {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.sidebar-nav a[href^="#"]');
+            
+            let currentSection = '';
+            
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= 100 && rect.bottom >= 100) {
+                    currentSection = section.id;
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + currentSection) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Event listeners
+        window.addEventListener('scroll', updateActiveNavigation);
+        window.addEventListener('load', function() {
+            updateActiveNavigation();
+            updateProgress();
+        });
+
+        // Smooth scrolling para links da sidebar
+        document.querySelectorAll('.sidebar-nav a[href^="#"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Responsividade - fechar sidebar em mobile quando clicar em link
+        if (window.innerWidth <= 1024) {
+            document.querySelectorAll('.sidebar-nav a').forEach(link => {
+                link.addEventListener('click', function() {
+                    toggleSidebar();
+                });
+            });
+        }
+
+        // Animações de entrada
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+
+        // Observar todas as seções
+        document.querySelectorAll('.section').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>
+
