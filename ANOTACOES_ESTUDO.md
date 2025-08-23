@@ -843,101 +843,270 @@ agent = create_react_agent(llm, tools, prompt)
 
 ---
 
-## 🔧 Script 7: 2-chains-e-processamento/7-pipeline-de-sumarizacao.py
+# 🧠 PASTA 4: GERENCIAMENTO DE MEMÓRIA
 
-### Explicação do pipeline manual map-reduce:
+---
+
+## 🧠 Script 1: 4-gerenciamento-de-memoria/1-armazenamento-de-historico.py
+
+### Explicação do MessagesPlaceholder:
 ```python
-# Fase MAP
-map_prompt = PromptTemplate.from_template("Write a concise summary of the following text:\n{context}")
-map_chain = map_prompt | llm | StrOutputParser()
-prepare_map_inputs = RunnableLambda(lambda docs: [{"context": d.page_content} for d in docs])
-map_stage = prepare_map_inputs | map_chain.map()
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
-# Fase REDUCE
-reduce_prompt = PromptTemplate.from_template("Combine the following summaries into a single concise summary:\n{context}")
-reduce_chain = reduce_prompt | llm | StrOutputParser()
-prepare_reduce_input = RunnableLambda(lambda summaries: {"context": "\n".join(summaries)})
-
-# Pipeline completo
-pipeline = map_stage | prepare_reduce_input | reduce_chain
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a helpful assistant."),
+    MessagesPlaceholder(variable_name="history"),
+    ("human", "{input}"),
+])
 ```
 
-### Diferença entre pipeline manual e load_summarize_chain:
+**O que é MessagesPlaceholder:**
+- **Reserva espaço** no prompt para inserir mensagens do histórico
+- **Variável dinâmica** que é preenchida com mensagens anteriores
+- **Mantém contexto** entre múltiplas interações
 
-**load_summarize_chain (Script 6):**
+### Explicação do InMemoryChatMessageHistory:
 ```python
-chain = load_summarize_chain(llm, chain_type="map_reduce")
-```
-- ✅ Mais simples de implementar
-- ❌ Menos controle sobre cada etapa
-- ❌ Prompts fixos (não personalizáveis)
+from langchain_core.chat_history import InMemoryChatMessageHistory
 
-**Pipeline manual (Script 7):**
-```python
-# Controle total sobre cada etapa
-map_prompt = PromptTemplate.from_template("Seu prompt personalizado")
-reduce_prompt = PromptTemplate.from_template("Seu prompt personalizado")
-```
-- ✅ Controle total sobre prompts
-- ✅ Personalização completa
-- ✅ Flexibilidade máxima
-- ❌ Mais código para implementar
-
-### Explicação do PromptTemplate.from_template():
-```python
-map_prompt = PromptTemplate.from_template("Write a concise summary of the following text:\n{context}")
+session_store: dict[str, InMemoryChatMessageHistory] = {}
 ```
 
-**Vantagem:**
-- **Criação rápida** de templates simples
-- **Não precisa definir** input_variables explicitamente
-- **Detecta automaticamente** as variáveis no template
+**O que é InMemoryChatMessageHistory:**
+- **Armazena histórico** de mensagens em memória
+- **Temporário**: Perdido quando aplicação é fechada
+- **Rápido**: Acesso direto na memória RAM
+- **Simples**: Ideal para testes e desenvolvimento
 
-### Explicação do método .map():
+### Explicação do RunnableWithMessageHistory:
 ```python
-map_stage = prepare_map_inputs | map_chain.map()
-```
+from langchain_core.runnables import RunnableWithMessageHistory
 
-**O que faz:**
-- **Aplica a chain** a cada item da lista de inputs
-- **Processamento paralelo** de múltiplos documentos
-- **Retorna lista** de resultados
-
-### Fluxo detalhado do pipeline:
-
-**Fase MAP:**
-```python
-# 1. prepare_map_inputs: Converte documentos em lista de dicionários
-# 2. map_chain.map(): Aplica sumarização a cada chunk
-# 3. Resultado: Lista de resumos individuais
-```
-
-**Fase REDUCE:**
-```python
-# 1. prepare_reduce_input: Junta todos os resumos em uma string
-# 2. reduce_chain: Combina os resumos em um resumo final
-# 3. Resultado: Resumo final consolidado
-```
-
-### Vantagens do pipeline manual:
-- **Controle total**: Personaliza cada etapa
-- **Prompts customizados**: Adapta para seu caso de uso
-- **Flexibilidade**: Pode adicionar etapas intermediárias
-- **Debugging**: Fácil de identificar problemas
-- **Otimização**: Pode ajustar cada componente
-
-### Exemplo de personalização:
-```python
-# Prompt personalizado para sumarização
-map_prompt = PromptTemplate.from_template(
-    "Summarize this text in exactly 3 bullet points:\n{context}"
-)
-
-# Prompt personalizado para combinação
-reduce_prompt = PromptTemplate.from_template(
-    "Create a poetic summary of these summaries:\n{context}"
+conversational_chain = RunnableWithMessageHistory(
+    chain,
+    get_session_history,
+    input_messages_key="input",
+    history_messages_key="history",
 )
 ```
+
+**Parâmetros importantes:**
+- **`chain`**: Chain base (prompt + modelo)
+- **`get_session_history`**: Função para obter histórico da sessão
+- **`input_messages_key="input"`**: Chave para mensagem atual
+- **`history_messages_key="history"`**: Chave para histórico no prompt
+
+### Explicação do gerenciamento de sessões:
+```python
+def get_session_history(session_id: str) -> InMemoryChatMessageHistory:
+    if session_id not in session_store:
+        session_store[session_id] = InMemoryChatMessageHistory()
+    return session_store[session_id]
+
+config = {"configurable": {"session_id": "demo-session"}}
+```
+
+**Como funciona:**
+- **session_id**: Identifica unicamente uma conversa
+- **session_store**: Dicionário que armazena históricos por sessão
+- **get_session_history**: Cria ou recupera histórico da sessão
+- **config**: Configuração passada para identificar a sessão
+
+### Fluxo de funcionamento:
+```python
+# 1. Primeira mensagem
+response1 = conversational_chain.invoke({"input": "Hello, my name is Wesley"}, config=config)
+# Histórico: [HumanMessage("Hello, my name is Wesley"), AIMessage("Hi Wesley!")]
+
+# 2. Segunda mensagem
+response2 = conversational_chain.invoke({"input": "What's my name?"}, config=config)
+# Histórico: [mensagens anteriores + HumanMessage("What's my name?"), AIMessage("Your name is Wesley")]
+```
+
+### Vantagens da memória de conversa:
+- **Contexto contínuo**: Modelo lembra informações anteriores
+- **Conversas naturais**: Pode referenciar mensagens passadas
+- **Múltiplas sessões**: Diferentes usuários/conversas isoladas
+- **Flexibilidade**: Pode ser implementada de várias formas
+
+### Limitações do InMemoryChatMessageHistory:
+- **Temporário**: Perdido ao reiniciar aplicação
+- **Limitado**: Pode consumir muita memória com conversas longas
+- **Sem persistência**: Não salva em banco de dados
+
+### Exemplo de uso prático:
+```python
+# Configurar memória
+session_store = {}
+def get_session_history(session_id: str):
+    if session_id not in session_store:
+        session_store[session_id] = InMemoryChatMessageHistory()
+    return session_store[session_id]
+
+# Criar chain com memória
+chain_with_memory = RunnableWithMessageHistory(
+    chain, get_session_history,
+    input_messages_key="input",
+    history_messages_key="history"
+)
+
+# Usar com diferentes sessões
+config1 = {"configurable": {"session_id": "user1"}}
+config2 = {"configurable": {"session_id": "user2"}}
+```
+
+---
+
+## 🧠 Script 2: 4-gerenciamento-de-memoria/2-historico-baseado-em-sliding-window.py
+
+### Explicação do trim_messages:
+```python
+from langchain_core.messages import trim_messages
+
+trimmed = trim_messages(
+    raw_history,
+    token_counter=len,
+    max_tokens=2,
+    strategy="last",
+    start_on="human",
+    include_system=True,
+    allow_partial=False,
+)
+```
+
+**O que é trim_messages:**
+- **Controla tamanho** do histórico de mensagens
+- **Reduz automaticamente** para caber no limite de tokens
+- **Implementa sliding window** para manter contexto recente
+- **Evita overflow** de contexto do modelo
+
+### Parâmetros importantes:
+
+**`token_counter=len`:**
+- **Função para contar** tokens/mensagens
+- **`len`**: Conta caracteres (simples para demonstração)
+- **Em produção**: Use tokenizer real do modelo
+
+**`max_tokens=2`:**
+- **Limite máximo** de tokens/mensagens
+- **Muito baixo** neste exemplo para demonstrar o efeito
+- **Em produção**: Use limite real do modelo (ex: 4000)
+
+**`strategy="last"`:**
+- **Estratégia de corte**: manter as últimas mensagens
+- **Alternativas**: `"first"` (primeiras), `"middle"` (meio)
+- **Mais comum**: `"last"` para manter contexto recente
+
+**`start_on="human"`:**
+- **Ponto de início** para contar tokens
+- **`"human"`**: Começa a contar de mensagens humanas
+- **Alternativas**: `"assistant"`, `"system"`
+
+**`include_system=True`:**
+- **Inclui mensagem** do sistema no histórico
+- **Importante**: Manter instruções do sistema
+- **Sempre True**: Para manter comportamento do assistente
+
+**`allow_partial=False`:**
+- **Não corta** mensagens no meio
+- **Mantém integridade** das mensagens
+- **Mais seguro**: Evita contexto incompleto
+
+### Explicação do Sliding Window:
+```python
+def prepare_inputs(payload: dict) -> dict:
+    raw_history = payload.get("raw_history", [])
+    trimmed = trim_messages(raw_history, ...)
+    return {"input": payload.get("input",""), "history": trimmed}
+```
+
+**Como funciona:**
+- **Histórico bruto**: Todas as mensagens da conversa
+- **Processamento**: `trim_messages` reduz para limite
+- **Sliding window**: Mantém apenas mensagens recentes
+- **Resultado**: Modelo "esquece" informações antigas
+
+### Diferença entre raw_history e history:
+```python
+conversational_chain = RunnableWithMessageHistory(
+    chain,
+    get_session_history,
+    input_messages_key="input",
+    history_messages_key="raw_history"  # Histórico bruto
+)
+```
+
+**raw_history vs history:**
+- **`raw_history`**: Histórico completo (antes do trim)
+- **`history`**: Histórico processado (depois do trim)
+- **Fluxo**: raw_history → trim_messages → history → modelo
+
+### Fluxo completo do Sliding Window:
+
+**1. Armazenamento:**
+```python
+# Todas as mensagens são salvas em raw_history
+session_store[session_id] = InMemoryChatMessageHistory()
+```
+
+**2. Processamento:**
+```python
+# trim_messages reduz o histórico para caber no limite
+trimmed = trim_messages(raw_history, max_tokens=2, strategy="last")
+```
+
+**3. Envio ao modelo:**
+```python
+# Modelo recebe apenas as mensagens mais recentes
+chain.invoke({"input": "nova mensagem", "history": trimmed})
+```
+
+### Vantagens do Sliding Window:
+- **Controle de custos**: Limita tokens enviados ao modelo
+- **Performance**: Evita contextos muito longos
+- **Conformidade**: Respeita limites de API
+- **Flexibilidade**: Diferentes estratégias de corte
+
+### Limitações do Sliding Window:
+- **Perda de contexto**: Informações antigas são perdidas
+- **Configuração complexa**: Precisa ajustar parâmetros
+- **Token counting**: Precisa de tokenizer preciso
+- **Estratégia de corte**: Pode perder informações importantes
+
+### Exemplo prático de uso:
+```python
+# Configuração realista
+trimmed = trim_messages(
+    raw_history,
+    token_counter=tokenizer.count_tokens,  # Tokenizer real
+    max_tokens=4000,  # Limite do modelo
+    strategy="last",
+    start_on="human",
+    include_system=True,
+    allow_partial=False,
+)
+```
+
+### Comparação com memória simples:
+
+**Memória simples (Script 1):**
+```python
+# Mantém todo o histórico
+history_messages_key="history"
+```
+- ✅ Contexto completo
+- ❌ Pode exceder limites
+- ❌ Custo crescente
+
+**Sliding Window (Script 2):**
+```python
+# Controla tamanho do histórico
+history_messages_key="raw_history"
+prepare_inputs = RunnableLambda(lambda p: trim_messages(p["raw_history"]))
+```
+- ✅ Controle de custos
+- ✅ Performance consistente
+- ❌ Perda de contexto antigo
 
 ---
 
