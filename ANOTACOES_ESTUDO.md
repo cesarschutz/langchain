@@ -1110,6 +1110,576 @@ prepare_inputs = RunnableLambda(lambda p: trim_messages(p["raw_history"]))
 
 ---
 
+# 📚 PASTA 5: LOADERS E BANCO DE DADOS VETORIAIS
+
+---
+
+## 📚 Script 1: 5-loaders-e-banco-de-dados-vetoriais/1-carregamento-usando-WebBaseLoader copy.py
+
+### Explicação do WebBaseLoader:
+```python
+from langchain_community.document_loaders import WebBaseLoader
+
+loader = WebBaseLoader("https://www.langchain.com/")
+docs = loader.load()
+```
+
+**O que é WebBaseLoader:**
+- **Carrega conteúdo** de páginas web via HTTP
+- **Extrai texto limpo** removendo HTML e formatação
+- **Suporta múltiplas URLs** em uma única requisição
+- **Automatiza** o processo de coleta de dados da web
+
+### Explicação do método load():
+```python
+docs = loader.load()
+```
+
+**O que faz:**
+- **Faz requisição HTTP** para a URL especificada
+- **Extrai conteúdo** da página web
+- **Remove HTML** e formatação desnecessária
+- **Retorna lista** de documentos (Document objects)
+
+### Explicação do split_documents():
+```python
+chunks = splitter.split_documents(docs)
+```
+
+**O que faz:**
+- **Recebe lista** de documentos
+- **Aplica splitter** a cada documento
+- **Retorna chunks** menores e gerenciáveis
+- **Mantém metadados** dos documentos originais
+
+### Fluxo completo de carregamento:
+
+**1. Carregamento:**
+```python
+loader = WebBaseLoader("https://www.langchain.com/")
+docs = loader.load()
+# Resultado: Lista de Document objects com conteúdo da página
+```
+
+**2. Divisão em chunks:**
+```python
+splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+chunks = splitter.split_documents(docs)
+# Resultado: Lista de chunks menores para processamento
+```
+
+**3. Processamento:**
+```python
+for chunk in chunks:
+    print(chunk)  # Cada chunk é um Document object
+```
+
+### Estrutura do Document object:
+```python
+# Cada documento tem:
+chunk.page_content  # Conteúdo do texto
+chunk.metadata      # Metadados (URL, título, etc.)
+```
+
+### Vantagens do WebBaseLoader:
+- **Simplicidade**: Uma linha para carregar conteúdo web
+- **Automação**: Remove necessidade de scraping manual
+- **Robustez**: Lida com diferentes tipos de páginas
+- **Flexibilidade**: Suporta múltiplas URLs
+
+### Limitações do WebBaseLoader:
+- **Dependência de internet**: Requer conexão ativa
+- **Rate limiting**: Pode ser bloqueado por sites
+- **Conteúdo dinâmico**: Não carrega JavaScript
+- **Formatação**: Pode perder estrutura complexa
+
+### Exemplo de uso com múltiplas URLs:
+```python
+# Carregar múltiplas páginas
+urls = [
+    "https://www.langchain.com/",
+    "https://www.langchain.com/docs/",
+    "https://www.langchain.com/community/"
+]
+loader = WebBaseLoader(urls)
+docs = loader.load()
+```
+
+### Exemplo de configuração avançada:
+```python
+# Configurar headers personalizados
+loader = WebBaseLoader(
+    "https://www.langchain.com/",
+    requests_kwargs={
+        "headers": {
+            "User-Agent": "Mozilla/5.0 (compatible; MyBot/1.0)"
+        }
+    }
+)
+```
+
+---
+
+## 📚 Script 2: 5-loaders-e-banco-de-dados-vetoriais/2-carregamento-de-pdf.py
+
+### Explicação do PyPDFLoader:
+```python
+from langchain_community.document_loaders import PyPDFLoader
+
+loader = PyPDFLoader("./gpt5.pdf")
+docs = loader.load()
+```
+
+**O que é PyPDFLoader:**
+- **Carrega arquivos PDF** locais do sistema
+- **Extrai texto** de todas as páginas do PDF
+- **Preserva estrutura** básica do documento
+- **Suporta PDFs** com texto e imagens (OCR não incluído)
+
+### Explicação do método load() para PDFs:
+```python
+docs = loader.load()
+```
+
+**O que faz:**
+- **Lê arquivo PDF** do caminho especificado
+- **Extrai texto** de cada página
+- **Cria Document objects** para cada página
+- **Inclui metadados** como número da página
+
+### Estrutura dos documentos PDF:
+```python
+# Cada documento representa uma página do PDF
+for doc in docs:
+    print(f"Página {doc.metadata['page']}: {doc.page_content[:100]}...")
+```
+
+**Metadados típicos:**
+- **`page`**: Número da página
+- **`source`**: Caminho do arquivo PDF
+- **`total_pages`**: Total de páginas no PDF
+
+### Fluxo completo de carregamento PDF:
+
+**1. Carregamento:**
+```python
+loader = PyPDFLoader("./gpt5.pdf")
+docs = loader.load()
+# Resultado: Lista de Document objects (um por página)
+```
+
+**2. Divisão em chunks:**
+```python
+splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+chunks = splitter.split_documents(docs)
+# Resultado: Chunks menores que podem cruzar páginas
+```
+
+**3. Análise:**
+```python
+print(len(chunks))  # Número total de chunks criados
+```
+
+### Vantagens do PyPDFLoader:
+- **Simplicidade**: Uma linha para carregar PDFs
+- **Preservação**: Mantém estrutura de páginas
+- **Metadados**: Inclui informações da página
+- **Compatibilidade**: Funciona com maioria dos PDFs
+
+### Limitações do PyPDFLoader:
+- **PDFs escaneados**: Não extrai texto de imagens
+- **Formatação complexa**: Pode perder layout
+- **Tabelas**: Pode não preservar estrutura
+- **Arquivos corrompidos**: Pode falhar
+
+### Exemplo de uso com metadados:
+```python
+# Acessar metadados dos documentos
+for doc in docs:
+    print(f"Página {doc.metadata['page']}")
+    print(f"Conteúdo: {doc.page_content[:200]}...")
+    print("-" * 50)
+```
+
+### Exemplo de configuração avançada:
+```python
+# Carregar apenas páginas específicas
+loader = PyPDFLoader("./gpt5.pdf")
+docs = loader.load()
+
+# Filtrar páginas específicas
+filtered_docs = [doc for doc in docs if doc.metadata['page'] <= 5]
+```
+
+### Comparação entre loaders:
+
+**WebBaseLoader (Script 1):**
+```python
+loader = WebBaseLoader("https://www.langchain.com/")
+```
+- ✅ Carrega conteúdo web
+- ❌ Requer internet
+- ❌ Pode ser bloqueado
+
+**PyPDFLoader (Script 2):**
+```python
+loader = PyPDFLoader("./gpt5.pdf")
+```
+- ✅ Carrega arquivos locais
+- ✅ Funciona offline
+- ✅ Preserva metadados de página
+
+### Dicas importantes:
+- **Caminho relativo**: Use `"./arquivo.pdf"` para arquivos no diretório atual
+- **Caminho absoluto**: Use `/caminho/completo/arquivo.pdf` para arquivos específicos
+- **Verificação**: Sempre verifique se o arquivo existe antes de carregar
+- **Tamanho**: PDFs muito grandes podem demorar para carregar
+
+---
+
+## 📚 Script 3: 5-loaders-e-banco-de-dados-vetoriais/3-ingestion-pgvector.py
+
+### Explicação do OpenAIEmbeddings:
+```python
+from langchain_openai import OpenAIEmbeddings
+
+embeddings = OpenAIEmbeddings(model=os.getenv("OPENAI_MODEL","text-embedding-3-small"))
+```
+
+**O que é OpenAIEmbeddings:**
+- **Cria vetores numéricos** dos textos (embeddings)
+- **Converte texto** em representação matemática
+- **Permite busca semântica** por similaridade
+- **Modelo padrão**: "text-embedding-3-small" (1536 dimensões)
+
+### Explicação do PGVector:
+```python
+from langchain_postgres import PGVector
+
+store = PGVector(
+    embeddings=embeddings,
+    collection_name=os.getenv("PGVECTOR_COLLECTION"),
+    connection=os.getenv("PGVECTOR_URL"),
+    use_jsonb=True,
+)
+```
+
+**O que é PGVector:**
+- **Armazena vetores** no PostgreSQL com extensão pgvector
+- **Permite busca por similaridade** usando distância vetorial
+- **Suporta metadados** em formato JSONB
+- **Escalável**: PostgreSQL é robusto para grandes volumes
+
+### Parâmetros do PGVector:
+
+**`embeddings`:**
+- **Modelo de embeddings** para criar vetores
+- **Deve ser consistente** entre ingestão e busca
+
+**`collection_name`:**
+- **Nome da coleção** no banco de dados
+- **Organiza documentos** em grupos lógicos
+
+**`connection`:**
+- **URL de conexão** com PostgreSQL
+- **Formato**: `postgresql://user:password@host:port/database`
+
+**`use_jsonb=True`:**
+- **Usa JSONB** para metadados (mais eficiente)
+- **Melhor performance** que JSON simples
+
+### Explicação da verificação de variáveis:
+```python
+for k in ("OPENAI_API_KEY", "PGVECTOR_URL","PGVECTOR_COLLECTION"):
+    if not os.getenv(k):
+        raise RuntimeError(f"Environment variable {k} is not set")
+```
+
+**O que faz:**
+- **Valida configuração** antes de executar
+- **Evita erros** em tempo de execução
+- **Garante** que todas as variáveis necessárias estão definidas
+
+### Explicação do Path(__file__).parent:
+```python
+current_dir = Path(__file__).parent
+pdf_path = current_dir / "gpt5.pdf"
+```
+
+**O que faz:**
+- **`__file__`**: Caminho do script atual
+- **`.parent`**: Diretório pai (onde está o script)
+- **Constrói caminho** relativo para o PDF
+- **Portável**: Funciona em diferentes sistemas
+
+### Explicação da limpeza de metadados:
+```python
+enriched = [
+    Document(
+        page_content=d.page_content,
+        metadata={k: v for k, v in d.metadata.items() if v not in ("", None)}
+    )
+    for d in splits
+]
+```
+
+**O que faz:**
+- **Remove valores vazios** (`""`) e nulos (`None`)
+- **Limpa metadados** desnecessários
+- **Reduz tamanho** do banco de dados
+- **Melhora performance** de busca
+
+### Explicação da geração de IDs:
+```python
+ids = [f"doc-{i}" for i in range(len(enriched))]
+```
+
+**O que faz:**
+- **Cria IDs únicos** para cada documento
+- **Formato**: "doc-0", "doc-1", "doc-2", etc.
+- **Permite atualização** e remoção específica
+- **Facilita debugging** e rastreamento
+
+### Explicação do add_documents():
+```python
+store.add_documents(documents=enriched, ids=ids)
+```
+
+**O que faz:**
+- **Armazena documentos** no banco vetorial
+- **Cria embeddings** automaticamente
+- **Associa IDs** aos documentos
+- **Indexa** para busca rápida
+
+### Fluxo completo de ingestão:
+
+**1. Carregamento:**
+```python
+docs = PyPDFLoader(str(pdf_path)).load()
+# Resultado: Document objects do PDF
+```
+
+**2. Divisão:**
+```python
+splits = RecursiveCharacterTextSplitter(...).split_documents(docs)
+# Resultado: Chunks menores
+```
+
+**3. Limpeza:**
+```python
+enriched = [Document(...) for d in splits]
+# Resultado: Documentos limpos
+```
+
+**4. Embeddings:**
+```python
+embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+# Resultado: Modelo para criar vetores
+```
+
+**5. Armazenamento:**
+```python
+store.add_documents(documents=enriched, ids=ids)
+# Resultado: Documentos indexados no banco
+```
+
+### Variáveis de ambiente necessárias:
+
+**`.env`:**
+```bash
+OPENAI_API_KEY=sk-...
+PGVECTOR_URL=postgresql://user:password@host:port/database
+PGVECTOR_COLLECTION=meus_documentos
+OPENAI_MODEL=text-embedding-3-small
+```
+
+### Vantagens do PGVector:
+- **Busca semântica**: Encontra documentos similares
+- **Escalabilidade**: PostgreSQL é robusto
+- **Metadados**: Suporta informações adicionais
+- **Performance**: Índices otimizados para vetores
+
+### Limitações do PGVector:
+- **Complexidade**: Requer PostgreSQL + pgvector
+- **Configuração**: Mais setup que soluções simples
+- **Custo**: Embeddings da OpenAI têm custo
+- **Latência**: Requisições para API de embeddings
+
+### Exemplo de configuração PostgreSQL:
+```sql
+-- Instalar extensão pgvector
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- Criar tabela para vetores
+CREATE TABLE document_vectors (
+    id TEXT PRIMARY KEY,
+    embedding vector(1536),
+    content TEXT,
+    metadata JSONB
+);
+```
+
+---
+
+## 📚 Script 4: 5-loaders-e-banco-de-dados-vetoriais/4-search-vector.py
+
+### Explicação do similarity_search_with_score():
+```python
+results = store.similarity_search_with_score(query, k=3)
+```
+
+**O que é similarity_search_with_score:**
+- **Busca documentos similares** usando similaridade vetorial
+- **Retorna tuplas** (documento, score) ordenadas por similaridade
+- **Score menor = mais similar** (distância vetorial)
+- **Parâmetro k**: Número de resultados a retornar
+
+### Explicação da query de busca:
+```python
+query = "Tell me more about the gpt-5 thinking evaluation and performance results comparing to gpt-4"
+```
+
+**O que é a query:**
+- **Texto de busca** que será convertido em embedding
+- **Pergunta ou termo** para encontrar documentos similares
+- **Processo**: Query → Embedding → Comparação com documentos no banco
+- **Resultado**: Documentos mais semanticamente similares
+
+### Explicação do score de similaridade:
+```python
+for i, (doc, score) in enumerate(results, start=1):
+    print(f"Resultado {i} (score: {score:.2f}):")
+```
+
+**Interpretação do score:**
+- **0.0**: Documentos idênticos
+- **0.0 - 0.3**: Muito similar (excelente match)
+- **0.3 - 0.7**: Similaridade moderada (bom match)
+- **0.7 - 1.0**: Baixa similaridade (match fraco)
+- **> 1.0**: Muito diferente (match ruim)
+
+### Fluxo completo de busca vetorial:
+
+**1. Preparação da query:**
+```python
+query = "Tell me more about the gpt-5 thinking evaluation..."
+# Query é convertida em embedding usando o mesmo modelo da ingestão
+```
+
+**2. Busca no banco:**
+```python
+results = store.similarity_search_with_score(query, k=3)
+# Retorna os 3 documentos mais similares com seus scores
+```
+
+**3. Processamento dos resultados:**
+```python
+for i, (doc, score) in enumerate(results, start=1):
+    print(f"Resultado {i} (score: {score:.2f}):")
+    print(doc.page_content)
+    print(doc.metadata)
+```
+
+### Explicação do parâmetro k:
+```python
+results = store.similarity_search_with_score(query, k=3)
+```
+
+**O que é k:**
+- **Número de resultados** a retornar
+- **k=3**: Retorna os 3 documentos mais similares
+- **k=1**: Retorna apenas o mais similar
+- **k=10**: Retorna os 10 mais similares
+- **Escolha baseada** na aplicação e performance
+
+### Exibição estruturada dos resultados:
+```python
+for i, (doc, score) in enumerate(results, start=1):
+    print("="*50)
+    print(f"Resultado {i} (score: {score:.2f}):")
+    print("="*50)
+    
+    print("\nTexto:\n")
+    print(doc.page_content.strip())
+    
+    print("\nMetadados:\n")
+    for k, v in doc.metadata.items():
+        print(f"{k}: {v}")
+```
+
+**Estrutura da exibição:**
+- **Separadores visuais**: `=` para delimitar cada resultado
+- **Score formatado**: `{score:.2f}` para 2 casas decimais
+- **Conteúdo limpo**: `.strip()` remove espaços extras
+- **Metadados organizados**: Chave-valor formatados
+
+### Vantagens da busca vetorial:
+- **Busca semântica**: Encontra documentos similares em significado
+- **Não depende** de palavras-chave exatas
+- **Escalável**: Funciona com grandes volumes de documentos
+- **Flexível**: Aceita queries em linguagem natural
+
+### Limitações da busca vetorial:
+- **Custo**: Cada busca gera embedding (custo da OpenAI)
+- **Latência**: Requisição para API de embeddings
+- **Qualidade**: Depende da qualidade dos embeddings
+- **Contexto**: Pode não capturar contexto específico
+
+### Exemplo de diferentes tipos de query:
+```python
+# Query específica
+query1 = "What are the performance benchmarks of GPT-5?"
+
+# Query genérica
+query2 = "Tell me about AI models"
+
+# Query com comparação
+query3 = "How does GPT-5 compare to GPT-4?"
+
+# Query técnica
+query4 = "What are the technical specifications?"
+```
+
+### Exemplo de filtros por score:
+```python
+# Filtrar apenas resultados muito similares
+good_results = [(doc, score) for doc, score in results if score < 0.3]
+
+# Filtrar resultados moderadamente similares
+moderate_results = [(doc, score) for doc, score in results if 0.3 <= score < 0.7]
+```
+
+### Comparação com busca tradicional:
+
+**Busca por palavras-chave:**
+```python
+# Busca exata (não semântica)
+if "GPT-5" in document.content:
+    return document
+```
+- ❌ Não encontra sinônimos
+- ❌ Não entende contexto
+- ✅ Muito rápida
+- ✅ Sem custo
+
+**Busca vetorial:**
+```python
+# Busca semântica
+results = store.similarity_search_with_score(query, k=3)
+```
+- ✅ Encontra documentos similares
+- ✅ Entende contexto e significado
+- ❌ Mais lenta
+- ❌ Tem custo
+
+### Dicas para otimizar busca:
+- **Queries específicas**: Melhoram a precisão
+- **Ajuste do k**: Balanceie quantidade e qualidade
+- **Filtros por score**: Removem resultados irrelevantes
+- **Metadados**: Use para filtrar por tipo de documento
+
+---
+
 ## 📝 Notas Gerais
 
 ### Diferença entre os métodos:
