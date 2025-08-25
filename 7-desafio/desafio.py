@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-import re
 from dotenv import load_dotenv
 
 from langchain_community.document_loaders import PyPDFLoader
