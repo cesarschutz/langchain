@@ -21,7 +21,7 @@ load_dotenv()
 # Cria uma instância do modelo de linguagem
 # - model="gpt-5-nano": Especifica qual modelo da OpenAI usar
 # - temperature=0.5: Controla a criatividade das respostas (0 = mais determinístico, 1 = mais criativo)
-model = ChatOpenAI(model="gpt-5-nano", temperature=0.5)
+model = ChatOpenAI(model="gpt-5-mini", temperature=0.5)
 
 # Envia uma mensagem para o modelo e recebe a resposta
 # O método invoke() é usado para fazer uma chamada única ao modelo
